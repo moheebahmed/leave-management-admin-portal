@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --scrollbar-thumb: #334155;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-base text-slate-200;
+  }
+}
+
+@layer components {
+  .nav-active-bar::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: theme('colors.accent');
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* App background: dark base + subtle “wavy” lines + warm glow like the screenshot */
+  .app-bg {
+    position: relative;
+    background:
+      radial-gradient(900px 420px at 70% -10%, rgba(224, 77, 51, 0.20), transparent 60%),
+      radial-gradient(700px 360px at 10% 20%, rgba(139, 92, 246, 0.10), transparent 55%),
+      radial-gradient(900px 520px at 40% 120%, rgba(6, 182, 212, 0.06), transparent 60%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0) 35%),
+      theme('colors.base');
+  }
+
+  .app-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.28;
+    background-image:
+      repeating-radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 26px),
+      repeating-radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 32px);
+    mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
+  }
+
+  .app-bg::after {
+    content: '';
+    position: absolute;
+    inset: -200px -200px -200px -200px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.12;
+    background:
+      conic-gradient(from 210deg at 30% 40%, transparent 0 40%, rgba(255, 255, 255, 0.16) 50%, transparent 60% 100%),
+      conic-gradient(from 30deg at 70% 10%, transparent 0 45%, rgba(255, 255, 255, 0.12) 55%, transparent 65% 100%);
+    filter: blur(0.5px);
+    transform: rotate(-6deg);
+  }
+
+  /* Ensure background effects never sit above app content */
+  .app-bg > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-input-base {
+    @apply w-full bg-input-bg border border-border rounded-lg px-3 py-2.5 text-sm text-slate-200
+           placeholder-slate-600 font-dm outline-none transition-all duration-150
+           focus:border-accent focus:ring-2 focus:ring-accent/10;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-1.5 bg-accent hover:bg-accent/90 text-white
+           font-semibold text-sm px-4 py-2 rounded-lg transition-all duration-150
+           hover:shadow-[0_4px_20px_rgba(224,77,51,0.28)] active:scale-95;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-1.5 bg-transparent border border-border
+           hover:bg-card-hover text-slate-400 hover:text-slate-200 font-semibold
+           text-sm px-4 py-2 rounded-lg transition-all duration-150 active:scale-95;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center w-8 h-8 rounded-lg border border-border
+           bg-transparent hover:bg-card text-slate-500 hover:text-slate-200
+           transition-all duration-150 cursor-pointer active:scale-95;
+  }
+
+  .card-base {
+    @apply bg-card/75 backdrop-blur-sm border border-border rounded-xl;
+  }
+
+  /* Typography helpers (keeps all pages consistent like the reference screenshot) */
+  .page-title {
+    @apply font-syne text-[1.8rem] md:text-[2rem] font-bold text-slate-100 tracking-tight;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-slate-400/80 mt-1;
+  }
+
+  .section-title {
+    @apply font-syne font-bold text-[14px] text-slate-100;
+  }
+
+  .muted {
+    @apply text-slate-400/80;
+  }
+
+  .table-th {
+    @apply px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-wider
+           text-slate-500 bg-surface border-b border-border;
+  }
+
+  .table-td {
+    @apply px-5 py-3.5 text-sm text-slate-200 border-b border-border;
+  }
+
+  .table-row-hover {
+    @apply hover:bg-card-hover transition-colors duration-100;
+  }
+}

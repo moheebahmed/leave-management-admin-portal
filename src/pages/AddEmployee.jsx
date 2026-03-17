@@ -1,0 +1,257 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { UserPlus, ArrowLeft } from 'lucide-react'
+import { useApp } from '../layouts/DashboardLayout'
+import { DEPARTMENTS } from '../data/initialData'
+import axios from 'axios'
+
+const INITIAL_FORM = {
+  full_name: '',
+  email: '',
+  password: '',
+  role: 'EMPLOYEE',
+  department: '',
+  designation: '',
+  joining_date: '',
+  confirmation_date: '',
+  employee_code: '',
+}
+
+const AddEmployee = () => {
+  const navigate = useNavigate()
+  const { setEmployees, showToast } = useApp()
+  const [form, setForm] = useState(INITIAL_FORM)
+  const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(false)
+
+  const set = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: '' }))
+  }
+
+  const validate = () => {
+    const e = {}
+    if (!form.full_name.trim()) e.full_name = 'Full name is required'
+    if (!form.email.trim() || !form.email.includes('@')) e.email = 'A valid email is required'
+    if (!form.password.trim() || form.password.length < 6) e.password = 'Password must be at least 6 characters'
+    if (!form.department) e.department = 'Please select a department'
+    if (!form.designation.trim()) e.designation = 'Designation is required'
+    if (!form.joining_date) e.joining_date = 'Joining date is required'
+    if (!form.confirmation_date) e.confirmation_date = 'Confirmation date is required'
+    if (!form.employee_code.trim()) e.employee_code = 'Employee code is required'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!validate()) return
+
+    setLoading(true)
+    try {
+      // ✅ Step 1: POST /api/auth/register — naya employee banao
+      await axios.post('http://localhost:3000/api/auth/register', form, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+
+      // ✅ Step 2: GET /api/hr/employees — fresh list lo
+      const res = await axios.get('http://localhost:3000/api/hr/employees', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      setEmployees(res.data.data.employees)
+
+      showToast(`${form.full_name} has been added successfully!`)
+      navigate('/employees')
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to add employee'
+      showToast(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const inputClass = (key) =>
+    `form-input-base ${errors[key] ? '!border-danger focus:!ring-danger/10' : ''}`
+
+  return (
+    <div className="animate-fade-slide">
+      {/* Header */}
+      <div className="flex items-baseline gap-3 mb-6">
+        <button onClick={() => navigate('/employees')} className="btn-ghost">
+          <ArrowLeft size={14} />
+        </button>
+        <div>
+          <h2 className="page-title">
+            <span className="text-accent font-bold">Add</span>{' '}
+            <span className="text-white font-bold">New Employee</span>
+          </h2>
+          <p className="page-subtitle mt-0.5 font-semibold text-[rgb(173,173,173)]">Fill in the details to register a new team member.</p>
+        </div>
+      </div>
+
+      {/* Form Card */}
+      <div className="max-w-2xl">
+        <div className="card-base p-6">
+          <h3 className="section-title mb-5">Employee Information</h3>
+
+          <form onSubmit={handleSubmit} noValidate>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+{/* Full Name */}
+<div className="sm:col-span-2 space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Full Name <span className="text-danger">*</span>
+  </label>
+  <input
+    className={inputClass('full_name')}
+    placeholder="Enter full name"
+    value={form.full_name}
+    onChange={(e) => set('full_name', e.target.value)}
+  />
+  {errors.full_name && <p className="text-xs text-danger">{errors.full_name}</p>}
+</div>
+
+{/* Email */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Email Address <span className="text-danger">*</span>
+  </label>
+  <input
+    type="email"
+    className={inputClass('email')}
+    placeholder="Enter email"
+    value={form.email}
+    onChange={(e) => set('email', e.target.value)}
+  />
+  {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
+</div>
+
+{/* Password */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Password <span className="text-danger">*</span>
+  </label>
+  <input
+    type="password"
+    className={inputClass('password')}
+    placeholder="Enter password"
+    value={form.password}
+    onChange={(e) => set('password', e.target.value)}
+  />
+  {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
+</div>
+
+{/* Employee Code */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Employee Code <span className="text-danger">*</span>
+  </label>
+  <input
+    className={inputClass('employee_code')}
+    placeholder="Enter employee code"
+    value={form.employee_code}
+    onChange={(e) => set('employee_code', e.target.value)}
+  />
+  {errors.employee_code && <p className="text-xs text-danger">{errors.employee_code}</p>}
+</div>
+
+{/* Role */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Role <span className="text-danger">*</span>
+  </label>
+  <select
+    className={`${inputClass('role')} cursor-pointer`}
+    value={form.role}
+    onChange={(e) => set('role', e.target.value)}
+  >
+    <option value="">Select role</option>
+    <option value="EMPLOYEE" className="bg-card">EMPLOYEE</option>
+    <option value="HR" className="bg-card">HR</option>
+  </select>
+</div>
+
+{/* Department */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Department <span className="text-danger">*</span>
+  </label>
+  <select
+    className={`${inputClass('department')} cursor-pointer`}
+    value={form.department}
+    onChange={(e) => set('department', e.target.value)}
+  >
+    <option value="">Select department</option>
+    {DEPARTMENTS.map((d) => (
+      <option key={d} value={d} className="bg-card">{d}</option>
+    ))}
+  </select>
+  {errors.department && <p className="text-xs text-danger">{errors.department}</p>}
+</div>
+
+{/* Designation */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Designation <span className="text-danger">*</span>
+  </label>
+  <input
+    className={inputClass('designation')}
+    placeholder="Enter designation"
+    value={form.designation}
+    onChange={(e) => set('designation', e.target.value)}
+  />
+  {errors.designation && <p className="text-xs text-danger">{errors.designation}</p>}
+</div>
+
+{/* Joining Date */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Joining Date <span className="text-danger">*</span>
+  </label>
+  <input
+    type="date"
+    className={inputClass('joining_date')}
+    value={form.joining_date}
+    onChange={(e) => set('joining_date', e.target.value)}
+  />
+  {errors.joining_date && <p className="text-xs text-danger">{errors.joining_date}</p>}
+</div>
+
+{/* Confirmation Date */}
+<div className="space-y-1.5">
+  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+    Confirmation Date <span className="text-danger">*</span>
+  </label>
+  <input
+    type="date"
+    className={inputClass('confirmation_date')}
+    value={form.confirmation_date}
+    onChange={(e) => set('confirmation_date', e.target.value)}
+  />
+  {errors.confirmation_date && <p className="text-xs text-danger">{errors.confirmation_date}</p>}
+</div>
+
+</div>
+
+            {/* Buttons */}
+            <div className="flex gap-3 mt-6">
+              <button type="submit" className="btn-primary" disabled={loading}>
+                <UserPlus size={14} />
+                {loading ? 'Adding...' : 'Add Employee'}
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => navigate('/employees')}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default AddEmployee

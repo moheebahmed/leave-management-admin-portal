@@ -1,0 +1,167 @@
+import { useNavigate } from 'react-router-dom'
+import { UserPlus, Pencil, Trash2, Search } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { useApp } from '../layouts/DashboardLayout'
+import { TableWrapper, EmptyState } from '../components/Table'
+import { DeptBadge } from '../components/Badge'
+import Avatar from '../components/Avatar'
+
+const Employees = () => {
+  const navigate = useNavigate()
+  const { employees, setEmployees, showToast } = useApp()
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [])
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await axios.get('http://localhost:3000/api/hr/employees', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      })
+      setEmployees(res.data.data.employees)
+    } catch (error) {
+      console.log('Error fetching employees:', error)
+      showToast('Failed to fetch employees')
+    }
+  }
+
+  const filtered = employees.filter((e) =>
+    e.department?.toLowerCase().includes(search.toLowerCase()) ||
+    e.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+    e.employee_code?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const handleDelete = (id, name) => {
+    setEmployees((prev) => prev.filter((e) => e.id !== id))
+    showToast(`${name} has been removed.`)
+  }
+
+  return (
+    <div className="animate-fade-slide space-y-5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="page-title">
+            <span className="text-accent font-bold">Employee</span>{' '}
+            <span className="text-white font-bold">Directory</span>
+          </h2>
+          <p className="page-subtitle font-semibold text-[rgb(173,173,173)]">{employees.length} employees registered</p>
+        </div>
+        <button className="btn-primary" onClick={() => navigate('/add-employee')}>
+          <UserPlus size={14} />
+          Add Employees
+        </button>
+      </div>
+
+      {/* Table */}
+      <TableWrapper
+        title="All Employees"
+        action={
+          <div className="flex items-center gap-2 bg-surface/70 border border-border rounded-lg px-3 py-1.5">
+            <Search size={12} className="text-slate-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search employees…"
+              className="bg-transparent text-xs text-slate-200 placeholder-slate-600 outline-none w-40"
+            />
+          </div>
+        }
+      >
+        {filtered.length === 0 ? (
+          <EmptyState message="No employees match your search." />
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[#000000]">
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee Code</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Department</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Designation</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Joining Date</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Confirmation</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Role</th>
+                <th className="table-th text-center font-semibold text-[rgb(173,173,173)] mr-4">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((emp, i) => (
+                <tr key={emp.id} className="table-row-hover last:[&>td]:border-0">
+
+                  {/* Employee Code */}
+                  <td className="table-td">
+                    <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
+                      {emp.employee_code}
+                    </span>
+                  </td>
+
+                  {/* Name + Email */}
+                  <td className="table-td">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={emp.full_name} index={i} />
+                      <div>
+                        <div className="font-medium text-slate-200 text-[13.5px]">{emp.full_name}</div>
+                        <div className="text-xs text-slate-500">{emp.User?.email}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Department */}
+                  <td className="table-td">
+                    <DeptBadge department={emp.department} />
+                  </td>
+
+                  {/* Designation */}
+                  <td className="table-td text-slate-400 text-[12.5px]">{emp.designation}</td>
+
+                  {/* Joining Date */}
+                  <td className="table-td text-slate-400 text-[12.5px]">
+                    {emp.joining_date ? new Date(emp.joining_date).toLocaleDateString() : '—'}
+                  </td>
+
+                  {/* Confirmation Date */}
+                  <td className="table-td text-slate-400 text-[12.5px]">
+                    {emp.confirmation_date ? new Date(emp.confirmation_date).toLocaleDateString() : '—'}
+                  </td>
+
+                  {/* Role */}
+                  <td className="table-td">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                      {emp.User?.role}
+                    </span>
+                  </td>
+
+                  {/* Actions */}
+                  <td className="table-td">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        className="btn-ghost hover:!bg-accent/10 hover:!text-accent hover:!border-accent/30"
+                        title="Edit"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        className="btn-ghost hover:!bg-danger/10 hover:!text-danger hover:!border-danger/30"
+                        title="Delete"
+                        onClick={() => handleDelete(emp.id, emp.full_name)}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </TableWrapper>
+    </div>
+  )
+}
+
+export default Employees
