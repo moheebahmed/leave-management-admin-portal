@@ -49,12 +49,12 @@ const AddEmployee = () => {
 
     setLoading(true)
     try {
-      // ✅ Step 1: POST /api/auth/register — naya employee banao
+      //   Step 1: POST /api/auth/register —  
       await axios.post('http://localhost:3000/api/auth/register', form, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
 
-      // ✅ Step 2: GET /api/hr/employees — fresh list lo
+      //   Step 2: GET /api/hr/employees —  
       const res = await axios.get('http://localhost:3000/api/hr/employees', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
@@ -95,143 +95,143 @@ const AddEmployee = () => {
           <h3 className="section-title mb-5">Employee Information</h3>
 
           <form onSubmit={handleSubmit} noValidate>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-{/* Full Name */}
-<div className="sm:col-span-2 space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Full Name <span className="text-danger">*</span>
-  </label>
-  <input
-    className={inputClass('full_name')}
-    placeholder="Enter full name"
-    value={form.full_name}
-    onChange={(e) => set('full_name', e.target.value)}
-  />
-  {errors.full_name && <p className="text-xs text-danger">{errors.full_name}</p>}
-</div>
+              {/* Full Name */}
+              <div className="sm:col-span-2 space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Full Name <span className="text-danger">*</span>
+                </label>
+                <input
+                  className={inputClass('full_name')}
+                  placeholder="Enter full name"
+                  value={form.full_name}
+                  onChange={(e) => set('full_name', e.target.value)}
+                />
+                {errors.full_name && <p className="text-xs text-danger">{errors.full_name}</p>}
+              </div>
 
-{/* Email */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Email Address <span className="text-danger">*</span>
-  </label>
-  <input
-    type="email"
-    className={inputClass('email')}
-    placeholder="Enter email"
-    value={form.email}
-    onChange={(e) => set('email', e.target.value)}
-  />
-  {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
-</div>
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Email Address <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="email"
+                  className={inputClass('email')}
+                  placeholder="Enter email"
+                  value={form.email}
+                  onChange={(e) => set('email', e.target.value)}
+                />
+                {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
+              </div>
 
-{/* Password */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Password <span className="text-danger">*</span>
-  </label>
-  <input
-    type="password"
-    className={inputClass('password')}
-    placeholder="Enter password"
-    value={form.password}
-    onChange={(e) => set('password', e.target.value)}
-  />
-  {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
-</div>
+              {/* Password */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Password <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="password"
+                  className={inputClass('password')}
+                  placeholder="Enter password"
+                  value={form.password}
+                  onChange={(e) => set('password', e.target.value)}
+                />
+                {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
+              </div>
 
-{/* Employee Code */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Employee Code <span className="text-danger">*</span>
-  </label>
-  <input
-    className={inputClass('employee_code')}
-    placeholder="Enter employee code"
-    value={form.employee_code}
-    onChange={(e) => set('employee_code', e.target.value)}
-  />
-  {errors.employee_code && <p className="text-xs text-danger">{errors.employee_code}</p>}
-</div>
+              {/* Employee Code */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Employee Code <span className="text-danger">*</span>
+                </label>
+                <input
+                  className={inputClass('employee_code')}
+                  placeholder="Enter employee code"
+                  value={form.employee_code}
+                  onChange={(e) => set('employee_code', e.target.value)}
+                />
+                {errors.employee_code && <p className="text-xs text-danger">{errors.employee_code}</p>}
+              </div>
 
-{/* Role */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Role <span className="text-danger">*</span>
-  </label>
-  <select
-    className={`${inputClass('role')} cursor-pointer`}
-    value={form.role}
-    onChange={(e) => set('role', e.target.value)}
-  >
-    <option value="">Select role</option>
-    <option value="EMPLOYEE" className="bg-card">EMPLOYEE</option>
-    <option value="HR" className="bg-card">HR</option>
-  </select>
-</div>
+              {/* Role */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Role <span className="text-danger">*</span>
+                </label>
+                <select
+                  className={`${inputClass('role')} cursor-pointer`}
+                  value={form.role}
+                  onChange={(e) => set('role', e.target.value)}
+                >
+                  <option value="">Select role</option>
+                  <option value="EMPLOYEE" className="bg-card">EMPLOYEE</option>
+                  <option value="HR" className="bg-card">HR</option>
+                </select>
+              </div>
 
-{/* Department */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Department <span className="text-danger">*</span>
-  </label>
-  <select
-    className={`${inputClass('department')} cursor-pointer`}
-    value={form.department}
-    onChange={(e) => set('department', e.target.value)}
-  >
-    <option value="">Select department</option>
-    {DEPARTMENTS.map((d) => (
-      <option key={d} value={d} className="bg-card">{d}</option>
-    ))}
-  </select>
-  {errors.department && <p className="text-xs text-danger">{errors.department}</p>}
-</div>
+              {/* Department */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Department <span className="text-danger">*</span>
+                </label>
+                <select
+                  className={`${inputClass('department')} cursor-pointer`}
+                  value={form.department}
+                  onChange={(e) => set('department', e.target.value)}
+                >
+                  <option value="">Select department</option>
+                  {DEPARTMENTS.map((d) => (
+                    <option key={d} value={d} className="bg-card">{d}</option>
+                  ))}
+                </select>
+                {errors.department && <p className="text-xs text-danger">{errors.department}</p>}
+              </div>
 
-{/* Designation */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Designation <span className="text-danger">*</span>
-  </label>
-  <input
-    className={inputClass('designation')}
-    placeholder="Enter designation"
-    value={form.designation}
-    onChange={(e) => set('designation', e.target.value)}
-  />
-  {errors.designation && <p className="text-xs text-danger">{errors.designation}</p>}
-</div>
+              {/* Designation */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Designation <span className="text-danger">*</span>
+                </label>
+                <input
+                  className={inputClass('designation')}
+                  placeholder="Enter designation"
+                  value={form.designation}
+                  onChange={(e) => set('designation', e.target.value)}
+                />
+                {errors.designation && <p className="text-xs text-danger">{errors.designation}</p>}
+              </div>
 
-{/* Joining Date */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Joining Date <span className="text-danger">*</span>
-  </label>
-  <input
-    type="date"
-    className={inputClass('joining_date')}
-    value={form.joining_date}
-    onChange={(e) => set('joining_date', e.target.value)}
-  />
-  {errors.joining_date && <p className="text-xs text-danger">{errors.joining_date}</p>}
-</div>
+              {/* Joining Date */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Joining Date <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="date"
+                  className={inputClass('joining_date')}
+                  value={form.joining_date}
+                  onChange={(e) => set('joining_date', e.target.value)}
+                />
+                {errors.joining_date && <p className="text-xs text-danger">{errors.joining_date}</p>}
+              </div>
 
-{/* Confirmation Date */}
-<div className="space-y-1.5">
-  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-    Confirmation Date <span className="text-danger">*</span>
-  </label>
-  <input
-    type="date"
-    className={inputClass('confirmation_date')}
-    value={form.confirmation_date}
-    onChange={(e) => set('confirmation_date', e.target.value)}
-  />
-  {errors.confirmation_date && <p className="text-xs text-danger">{errors.confirmation_date}</p>}
-</div>
+              {/* Confirmation Date */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Confirmation Date <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="date"
+                  className={inputClass('confirmation_date')}
+                  value={form.confirmation_date}
+                  onChange={(e) => set('confirmation_date', e.target.value)}
+                />
+                {errors.confirmation_date && <p className="text-xs text-danger">{errors.confirmation_date}</p>}
+              </div>
 
-</div>
+            </div>
 
             {/* Buttons */}
             <div className="flex gap-3 mt-6">

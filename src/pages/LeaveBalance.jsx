@@ -38,13 +38,13 @@ const LeaveBalance = () => {
     try {
       setLoading(true)
 
-      // Step 1: Saare employees lo
+       
       const empRes = await axios.get('http://localhost:3000/api/hr/employees', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
       const employees = empRes.data.data.employees
 
-      // Step 2: Har employee ki balances lo aur group karo
+      
       const grouped = []
 
       await Promise.all(
@@ -132,7 +132,7 @@ const LeaveBalance = () => {
             <tbody>
               {groupedBalances.map((group) => (
                 <>
-                  {/* ✅ Main Employee Row */}
+                  {/*  Main Employee Row */}
                   <tr
                     key={group.empId}
                     className="table-row-hover cursor-pointer"
@@ -189,7 +189,7 @@ const LeaveBalance = () => {
                     </td>
                   </tr>
 
-                  {/* ✅ Expanded Leave Details */}
+                  {/* Expanded Leave Details */}
                   {expandedRows[group.empId] && (
                     <tr key={`${group.empId}-expanded`}>
                       <td colSpan={5} className="px-4 pb-3 pt-0">

@@ -1,12 +1,14 @@
 import { useNavigate } from 'react-router-dom'
-import { Pencil, Trash2, Copy, Search, ChevronDown } from 'lucide-react'
+import { Pencil, Trash2, Copy, Search, ChevronDown, X, Save } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import axios from 'axios'
 import { useApp } from '../layouts/DashboardLayout'
 import { TableWrapper, EmptyState } from '../components/Table'
 import Avatar from '../components/Avatar'
 
-const StatusBadge = ({ status, onStatusChange }) => {
+// ─── Status Badge ────────────────────────────────────────────────────────────
+const StatusBadge = ({ status, onStatusChange, isLeadApproval }) => {
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -15,15 +17,11 @@ const StatusBadge = ({ status, onStatusChange }) => {
     PENDING: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
     REJECTED: 'bg-danger/10 text-danger border-danger/20',
   }
-
   const allStatuses = ['APPROVED', 'PENDING', 'REJECTED']
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false)
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -33,14 +31,14 @@ const StatusBadge = ({ status, onStatusChange }) => {
     <div className="relative inline-block" ref={dropdownRef}>
       <span
         className={`text-xs px-2 py-0.5 rounded-full border cursor-pointer select-none flex items-center gap-1 ${colors[status] || colors.PENDING}`}
-        onClick={() => setOpen(!open)}
+        onClick={(e) => { e.stopPropagation(); setOpen(!open) }}
       >
         {status}
         <ChevronDown size={10} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </span>
 
       <div
-        className="absolute z-50 mt-1 left-0 bg-[#1a1a1a] border border-border rounded-lg shadow-xl overflow-hidden min-w-[110px]"
+        className="absolute z-50 mt-1 left-0 bg-[#1a1a1a] border border-border rounded-lg shadow-xl overflow-hidden min-w-[140px]"
         style={{
           transition: 'opacity 0.15s ease, transform 0.15s ease',
           opacity: open ? 1 : 0,
@@ -48,24 +46,149 @@ const StatusBadge = ({ status, onStatusChange }) => {
           pointerEvents: open ? 'auto' : 'none',
         }}
       >
-        {allStatuses.map((s) => (
-          <div
-            key={s}
-            className={`text-xs px-3 py-2 cursor-pointer hover:bg-white/5 flex items-center gap-2 transition-colors ${colors[s]} ${s === status ? 'opacity-100 font-semibold' : 'opacity-70'}`}
-            onClick={() => {
-              if (s !== status) onStatusChange(s)
-              setOpen(false)
-            }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-current" />
-            {s}
-          </div>
-        ))}
+        {allStatuses.map((s) => {
+          const isDisabled = s === 'APPROVED' && !isLeadApproval
+
+          return (
+            <div
+              key={s}
+              className={`text-xs px-3 py-2 flex items-center gap-2 transition-colors ${colors[s]} 
+                ${s === status ? 'opacity-100 font-semibold' : 'opacity-70'}
+                ${isDisabled
+                  ? 'opacity-30 cursor-not-allowed'
+                  : 'cursor-pointer hover:bg-white/5'
+                }`}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (isDisabled) return
+                if (s !== status) onStatusChange(s)
+                setOpen(false)
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              <span className="flex-1">{s}</span>
+              {isDisabled && (
+                <span className="text-[9px] text-yellow-500 font-medium">Lead required</span>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
 }
 
+// ─── Feedback Modal ───────────────────────────────────────────────────────────
+const FeedbackModal = ({ request, onClose, onSave }) => {
+  const [feedback, setFeedback] = useState(request?.feedback || '')
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    document.body.style.overflow = 'hidden'
+    document.body.style.paddingRight = `${scrollbarWidth}px`
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+    }
+  }, [])
+
+  const handleSave = async (status) => {
+    setSaving(true)
+    await onSave(request.id, { feedback, status })
+    setSaving(false)
+    onClose()
+  }
+
+  if (!request) return null
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#111] border border-border rounded-xl shadow-2xl w-full max-w-md p-6 space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-white font-semibold text-[15px]">Update Feedback</h3>
+            <p className="text-slate-500 text-xs mt-0.5">
+              Request #{request.id} — {request.Employee?.full_name}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-white transition-colors p-1"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Info Row */}
+        <div className="bg-surface/50 border border-border rounded-lg p-3 space-y-1">
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">Leave Type</span>
+            <span className="text-cyan">{request.LeaveType?.name || '—'}</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">Status</span>
+            <span className={`font-semibold ${request.status === 'APPROVED' ? 'text-emerald' :
+              request.status === 'REJECTED' ? 'text-red-400' : 'text-yellow-400'
+              }`}>{request.status}</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">Total Days</span>
+            <span className="text-white">{request.total_days}</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-slate-500">Lead Approval</span>
+            <span className={`font-semibold ${request.isLeadApproval ? 'text-white' : 'text-yellow-500'}`}>
+              {request.isLeadApproval ? 'APPROVED' : 'PENDING'}
+            </span>
+          </div>
+        </div>
+
+        {/* Feedback Input */}
+        <div className="space-y-2">
+          <label className="text-xs text-slate-400 font-medium">Feedback</label>
+          <textarea
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder="Enter feedback..."
+            rows={3}
+            className="w-full bg-surface/70 border border-border rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-600 outline-none focus:border-accent/50 resize-none transition-colors"
+          />
+        </div>
+
+        {/* Buttons */}
+        <div className="flex items-center justify-end gap-3 pt-1">
+          <button
+            onClick={() => handleSave('REJECTED')}
+            disabled={saving}
+            className="btn-ghost text-xs w-[4.5rem] text-white"
+          >
+            Rejected
+          </button>
+
+          <button
+            onClick={() => handleSave('APPROVED')}
+            disabled={saving}
+            className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Save size={13} className="text-white" />
+            {saving ? 'Saving...' : 'APPROVED'}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 const LeaveRequests = () => {
   const navigate = useNavigate()
   const { showToast } = useApp()
@@ -73,6 +196,7 @@ const LeaveRequests = () => {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedRows, setSelectedRows] = useState([])
+  const [modalRequest, setModalRequest] = useState(null)
 
   useEffect(() => {
     fetchLeaveRequests()
@@ -82,14 +206,10 @@ const LeaveRequests = () => {
     try {
       setLoading(true)
       const res = await axios.get('http://localhost:3000/api/hr/leave/requests', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
-      console.log('API Response:', res.data)
       setRequests(res.data.data.requests || [])
     } catch (error) {
-      console.error('Error fetching leave requests:', error.response || error)
       showToast('Failed to fetch leave requests')
     } finally {
       setLoading(false)
@@ -102,72 +222,104 @@ const LeaveRequests = () => {
     req.status?.toLowerCase().includes(search.toLowerCase())
   )
 
+  // ─── Employee ke basis pe group karo ─────────────────────────────────────
+  const groupedByEmployee = filtered.reduce((acc, req) => {
+    const key = req.Employee?.full_name || 'Unknown'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(req)
+    return acc
+  }, {})
+
+  const groupedRows = Object.values(groupedByEmployee)
+  // ─────────────────────────────────────────────────────────────────────────
+
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this leave request?')) return
-
     try {
       await axios.delete(`http://localhost:3000/api/hr/leave/requests/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
       setRequests((prev) => prev.filter((r) => r.id !== id))
       showToast('Leave request deleted successfully')
-    } catch (error) {
-      console.log('Error deleting request:', error)
+    } catch {
       showToast('Failed to delete leave request')
     }
   }
 
   const handleStatusChange = async (id, newStatus) => {
-    console.log('Updating status:', { id, newStatus })
-
     try {
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:3000/api/hr/leave/requests/${id}/status`,
         { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
       )
-
-      console.log('Status update response:', response.data)
-
       setRequests((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
       )
       showToast(`Status updated to ${newStatus}`)
     } catch (error) {
-      console.error('Error updating status:', error.response?.data || error)
       showToast(error.response?.data?.message || 'Failed to update status')
     }
   }
 
+  const handleFeedbackSave = async (id, { feedback, status }) => {
+    try {
+      await axios.put(
+        `http://localhost:3000/api/employee/leave/requests/${id}/update`,
+        { feedback },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      )
+      if (status) {
+        await axios.put(
+          `http://localhost:3000/api/hr/leave/requests/${id}/status`,
+          { status },
+          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        )
+      }
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, feedback, ...(status && { status }) } : r))
+      )
+      showToast('Saved successfully ')
+    } catch (error) {
+      showToast(error.response?.data?.message || 'Failed to save')
+    }
+  }
+
+  const handleLeadApprovalToggle = async (id, currentValue) => {
+    const newValue = !currentValue
+    try {
+      await axios.put(
+        `http://localhost:3000/api/employee/leave/requests/${id}/update`,
+        { isLeadApproval: newValue },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      )
+      setRequests((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, isLeadApproval: newValue } : r))
+      )
+      showToast(`Lead Approval ${newValue ? 'enabled' : 'disabled'}`)
+    } catch (error) {
+      showToast('Failed to update Lead Approval')
+    }
+  }
+
   const handleCopy = (request) => {
-    const employeeName = request.Employee?.full_name || 'Unknown'
-    const text = `Employee: ${employeeName}\nLeave Type: ${request.LeaveType?.name}\nDates: ${new Date(request.start_date).toLocaleDateString()} - ${new Date(request.end_date).toLocaleDateString()}\nDays: ${request.total_days}\nStatus: ${request.status}`
+    const text = `Employee: ${request.Employee?.full_name}\nLeave Type: ${request.LeaveType?.name}\nDates: ${request.start_date} - ${request.end_date}\nDays: ${request.total_days}\nStatus: ${request.status}`
     navigator.clipboard.writeText(text)
     showToast('Request details copied to clipboard')
   }
 
-  const toggleSelectAll = () => {
-    if (selectedRows.length === filtered.length) {
-      setSelectedRows([])
-    } else {
-      setSelectedRows(filtered.map((r) => r.id))
-    }
-  }
-
-  const toggleSelectRow = (id) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
-    )
-  }
-
   return (
     <div className="animate-fade-slide space-y-5">
+
+      {/* Feedback Modal */}
+      {modalRequest && (
+        <FeedbackModal
+          request={modalRequest}
+          onClose={() => setModalRequest(null)}
+          onSave={handleFeedbackSave}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -220,8 +372,8 @@ const LeaveRequests = () => {
           <table className="w-full h-[53.5vh]">
             <thead>
               <tr className="bg-[#000000]">
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">ID</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">ID</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Leave Type</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Start Date</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">End Date</th>
@@ -229,103 +381,149 @@ const LeaveRequests = () => {
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Reason</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Status</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Actioned By</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Feedback</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)]">Lead Approval</th>
                 <th className="table-th text-center font-semibold text-[rgb(173,173,173)]">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((req, i) => (
-                <tr key={req.id} className="table-row-hover last:[&>td]:border-0">
-                  {/* ID */}
-                  <td className="table-td">
-                    <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
-                      {req.id}
-                    </span>
-                  </td>
+              {groupedRows.map((group, groupIndex) =>
+                group.map((req, rowIndex) => (
+                  <tr
+                    key={req.id}
+                    className="table-row-hover last:[&>td]:border-0 cursor-pointer"
+                    onClick={() => setModalRequest(req)}
+                  >
 
-                  {/* Employee */}
-                  <td className="table-td">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar
-                        name={req.Employee?.full_name || 'Unknown'}
-                        index={i}
-                        size="sm"
-                      />
-                      <span className="font-medium text-slate-200 text-[13.5px]">
-                        {req.Employee?.full_name || '—'}
+                   
+                    {rowIndex === 0 && (
+                      <td
+                        className="table-td align-middle"
+                        rowSpan={group.length}
+                        style={{
+                          borderRight: '1px solid rgba(255,255,255,0.07)',
+                          background: 'rgba(255,255,255,0.01)',
+                          verticalAlign: 'middle',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Avatar name={req.Employee?.full_name || 'Unknown'} index={groupIndex} size="sm" />
+                          <span className="font-medium text-slate-200 text-[13.5px]">
+                            {req.Employee?.full_name || '—'}
+                          </span>
+                        </div>
+                        {group.length > 1 && (
+                          <div className="mt-1">
+                            <span className="text-[10px] text-slate-500 bg-surface/60 border border-border px-1.5 py-0.5 rounded-full">
+                              {group.length} requests
+                            </span>
+                          </div>
+                        )}
+                      </td>
+                    )}
+
+                    {/* ID */}
+                    <td className="table-td">
+                      <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
+                        {req.id}
                       </span>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Leave Type */}
-                  <td className="table-td">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-cyan/10 text-cyan border border-cyan/20">
-                      {req.LeaveType?.name || '—'}
-                    </span>
-                  </td>
+                    {/* Leave Type */}
+                    <td className="table-td">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-cyan/10 text-cyan border border-cyan/20">
+                        {req.LeaveType?.name || '—'}
+                      </span>
+                    </td>
 
-                  {/* Start Date */}
-                  <td className="table-td text-slate-400 text-[12.5px]">
-                    {req.start_date ? new Date(req.start_date).toLocaleDateString() : '—'}
-                  </td>
+                    {/* Start Date */}
+                    <td className="table-td text-slate-400 text-[12.5px]">
+                      {req.start_date ? new Date(req.start_date).toLocaleDateString() : '—'}
+                    </td>
 
-                  {/* End Date */}
-                  <td className="table-td text-slate-400 text-[12.5px]">
-                    {req.end_date ? new Date(req.end_date).toLocaleDateString() : '—'}
-                  </td>
+                    {/* End Date */}
+                    <td className="table-td text-slate-400 text-[12.5px]">
+                      {req.end_date ? new Date(req.end_date).toLocaleDateString() : '—'}
+                    </td>
 
-                  {/* Total Days */}
-                  <td className="table-td">
-                    <span className="font-semibold text-slate-300 text-[13px]">
-                      {req.total_days}
-                    </span>
-                  </td>
+                    {/* Total Days */}
+                    <td className="table-td">
+                      <span className="font-semibold text-slate-300 text-[13px]">
+                        {req.total_days}
+                      </span>
+                    </td>
 
-                  {/* Reason */}
-                  <td className="table-td text-slate-400 text-[12.5px] max-w-[200px] truncate">
-                    {req.reason || '—'}
-                  </td>
+                    {/* Reason */}
+                    <td className="table-td text-[#fff] font-medium text-[12.5px] max-w-[160px] truncate">
+                      {req.reason || '—'}
+                    </td>
 
-                  {/* Status - Dropdown */}
-                  <td className="table-td">
-                    <StatusBadge
-                      status={req.status}
-                      onStatusChange={(newStatus) => handleStatusChange(req.id, newStatus)}
-                    />
-                  </td>
+                    {/* Status */}
+                    <td className="table-td" onClick={(e) => e.stopPropagation()}>
+                      <StatusBadge
+                        status={req.status}
+                        isLeadApproval={req.isLeadApproval}
+                        onStatusChange={(newStatus) => handleStatusChange(req.id, newStatus)}
+                      />
+                    </td>
 
-                  {/* Actioned By */}
-                  <td className="table-td text-slate-400 text-[12.5px]">
-                    {req.actioned_by || '—'}
-                  </td>
+                    {/* Actioned By */}
+                    <td className="table-td text-slate-400 text-[12.5px]">
+                      {req.actioned_by || '—'}
+                    </td>
 
-                  {/* Actions */}
-                  <td className="table-td">
-                    <div className="flex items-center justify-end gap-2">
+                    {/* Feedback */}
+                    <td className="table-td text-[12.5px] max-w-[130px] truncate">
+                      {req.feedback
+                        ? <span className="text-slate-300">{req.feedback}</span>
+                        : <span className="text-slate-600 italic">No feedback</span>
+                      }
+                    </td>
+
+                    {/* Lead Approval Toggle */}
+                    <td className="table-td" onClick={(e) => e.stopPropagation()}>
                       <button
-                        className="btn-ghost hover:!bg-accent/10 hover:!text-accent hover:!border-accent/30"
-                        title="Edit"
-                        onClick={() => showToast('Edit functionality coming soon')}
+                        onClick={() => handleLeadApprovalToggle(req.id, req.isLeadApproval)}
+                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${req.isLeadApproval ? 'bg-accent' : 'bg-slate-700'
+                          }`}
                       >
-                        <Pencil size={13} />
+                        <span
+                          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${req.isLeadApproval ? 'translate-x-5' : 'translate-x-0'
+                            }`}
+                        />
                       </button>
-                      <button
-                        className="btn-ghost hover:!bg-cyan/10 hover:!text-cyan hover:!border-cyan/30"
-                        title="Copy"
-                        onClick={() => handleCopy(req)}
-                      >
-                        <Copy size={13} />
-                      </button>
-                      <button
-                        className="btn-ghost hover:!bg-danger/10 hover:!text-danger hover:!border-danger/30"
-                        title="Delete"
-                        onClick={() => handleDelete(req.id)}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="table-td" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="btn-ghost hover:!bg-accent/10 hover:!text-accent hover:!border-accent/30"
+                          title="Edit Feedback"
+                          onClick={() => setModalRequest(req)}
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          className="btn-ghost hover:!bg-cyan/10 hover:!text-cyan hover:!border-cyan/30"
+                          title="Copy"
+                          onClick={() => handleCopy(req)}
+                        >
+                          <Copy size={13} />
+                        </button>
+                        <button
+                          className="btn-ghost hover:!bg-danger/10 hover:!text-danger hover:!border-danger/30"
+                          title="Delete"
+                          onClick={() => handleDelete(req.id)}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         )}
