@@ -25,7 +25,6 @@ const AddLeaveBalance = () => {
       const allEmployees = res.data.data.employees
       setEmployees(allEmployees)
 
-      // Find which employees already have a balance (only in add mode)
       if (!isEdit) {
         const withBalance = []
         await Promise.all(
@@ -47,7 +46,6 @@ const AddLeaveBalance = () => {
       const types = res.data.data.leave_types
       setLeaveTypes(types)
 
-      // If edit mode, pre-fill existing balances
       if (empId) {
         axios.get(`${API_BASE_URL}/hr/employees/${empId}/balances`, { headers: getAuthHeaders() })
           .then(balRes => {
@@ -149,7 +147,7 @@ const AddLeaveBalance = () => {
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
-            {/*  Employee Dropdown — API 1 */}
+            {/* Employee Dropdown */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                 Employee <span className="text-danger">*</span>
@@ -173,7 +171,7 @@ const AddLeaveBalance = () => {
               {errors.emp && <p className="text-xs text-danger">{errors.emp}</p>}
             </div>
 
-            {/*  Leave Types Checkboxes — API 2 */}
+            {/* Leave Types Checkboxes */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                 Leave Types <span className="text-danger">*</span>

@@ -7,6 +7,7 @@ import AddEmployee from './pages/AddEmployee'
 import LeaveRequests from './pages/LeaveRequests'
 import LeaveBalance from './pages/LeaveBalance'
 import AddLeaveBalance from './pages/AddLeaveBalance'
+import LeaveTypes from './pages/LeaveTypes'
 import Login from './pages/Login'
 import Notifications from './pages/Notifications'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -55,6 +56,7 @@ const App = () => {
         <Route path="leave-balance" element={<LeaveBalance />} />
         <Route path="add-leave" element={<AddLeaveBalance />} />
         <Route path="edit-leave/:empId" element={<AddLeaveBalance />} />
+        <Route path="leave-types" element={<LeaveTypes />} />
         <Route path="notifications" element={<Notifications />} />
       </Route>
 

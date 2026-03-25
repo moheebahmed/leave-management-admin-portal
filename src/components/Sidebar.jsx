@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   Bell,
+  Tag,
 } from 'lucide-react'
 
 const NAV_GROUPS = [
@@ -28,6 +29,7 @@ const NAV_GROUPS = [
       { to: '/leave-requests', label: 'Leave Requests', icon: ClipboardList },
       { to: '/leave-balance', label: 'Leave Balance', icon: ClipboardList },
       { to: '/add-leave', label: 'Add Leave Balance', icon: PlusCircle },
+      { to: '/leave-types', label: 'Leave Types', icon: Tag },
     ],
   },
   {
