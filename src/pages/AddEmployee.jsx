@@ -4,6 +4,7 @@ import { UserPlus, ArrowLeft } from 'lucide-react'
 import { useApp } from '../layouts/DashboardLayout'
 import { DEPARTMENTS } from '../data/initialData'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 
 const INITIAL_FORM = {
   full_name: '',
@@ -50,13 +51,12 @@ const AddEmployee = () => {
     setLoading(true)
     try {
       //   Step 1: POST /api/auth/register —  
-      await axios.post('http://localhost:3000/api/auth/register', form, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      await axios.post(`${API_BASE_URL}/auth/register`, form, {
+        headers: getAuthHeaders()
       })
 
-      //   Step 2: GET /api/hr/employees —  
-      const res = await axios.get('http://localhost:3000/api/hr/employees', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const res = await axios.get(`${API_BASE_URL}/hr/employees`, {
+        headers: getAuthHeaders()
       })
       setEmployees(res.data.data.employees)
 

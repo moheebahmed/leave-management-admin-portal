@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Bell, CheckCheck } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
-
   useEffect(() => {
-    axios.get('http://localhost:3000/api/employee/notifications', { headers })
+    axios.get(`${API_BASE_URL}/employee/notifications`, { headers: getAuthHeaders() })
       .then(res => setNotifications(res.data.data.notifications || []))
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -18,12 +17,12 @@ const Notifications = () => {
   const unreadCount = notifications.filter(n => !n.is_read).length
 
   const markAllRead = async () => {
-    await axios.put('http://localhost:3000/api/employee/notifications/read-all', {}, { headers })
+    await axios.put(`${API_BASE_URL}/employee/notifications/read-all`, {}, { headers: getAuthHeaders() })
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
   }
 
   const markRead = async (id) => {
-    await axios.put(`http://localhost:3000/api/employee/notifications/${id}/read`, {}, { headers })
+    await axios.put(`${API_BASE_URL}/employee/notifications/${id}/read`, {}, { headers: getAuthHeaders() })
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
   }
 

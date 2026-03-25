@@ -3,6 +3,7 @@ import { Pencil, Trash2, Copy, Search, ChevronDown, X, Save } from 'lucide-react
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 import { useApp } from '../layouts/DashboardLayout'
 import { TableWrapper, EmptyState } from '../components/Table'
 import Avatar from '../components/Avatar'
@@ -205,8 +206,8 @@ const LeaveRequests = () => {
   const fetchLeaveRequests = async () => {
     try {
       setLoading(true)
-      const res = await axios.get('http://localhost:3000/api/hr/leave/requests', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const res = await axios.get(`${API_BASE_URL}/hr/leave/requests`, {
+        headers: getAuthHeaders()
       })
       setRequests(res.data.data.requests || [])
     } catch (error) {
@@ -236,8 +237,8 @@ const LeaveRequests = () => {
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this leave request?')) return
     try {
-      await axios.delete(`http://localhost:3000/api/hr/leave/requests/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      await axios.delete(`${API_BASE_URL}/hr/leave/requests/${id}`, {
+        headers: getAuthHeaders()
       })
       setRequests((prev) => prev.filter((r) => r.id !== id))
       showToast('Leave request deleted successfully')
@@ -249,9 +250,9 @@ const LeaveRequests = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:3000/api/hr/leave/requests/${id}/status`,
+        `${API_BASE_URL}/hr/leave/requests/${id}/status`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        { headers: getAuthHeaders() }
       )
       setRequests((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
@@ -265,15 +266,15 @@ const LeaveRequests = () => {
   const handleFeedbackSave = async (id, { feedback, status }) => {
     try {
       await axios.put(
-        `http://localhost:3000/api/employee/leave/requests/${id}/update`,
+        `${API_BASE_URL}/employee/leave/requests/${id}/update`,
         { feedback },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        { headers: getAuthHeaders() }
       )
       if (status) {
         await axios.put(
-          `http://localhost:3000/api/hr/leave/requests/${id}/status`,
+          `${API_BASE_URL}/hr/leave/requests/${id}/status`,
           { status },
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+          { headers: getAuthHeaders() }
         )
       }
       setRequests((prev) =>
@@ -289,9 +290,9 @@ const LeaveRequests = () => {
     const newValue = !currentValue
     try {
       await axios.put(
-        `http://localhost:3000/api/employee/leave/requests/${id}/update`,
+        `${API_BASE_URL}/employee/leave/requests/${id}/update`,
         { isLeadApproval: newValue },
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        { headers: getAuthHeaders() }
       )
       setRequests((prev) =>
         prev.map((r) => (r.id === id ? { ...r, isLeadApproval: newValue } : r))

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CheckCircle, ArrowLeft, Info } from 'lucide-react'
 import { useApp } from '../layouts/DashboardLayout'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 
 const AddLeaveBalance = () => {
   const navigate = useNavigate()
@@ -16,15 +17,14 @@ const AddLeaveBalance = () => {
 
   useEffect(() => {
 
-    // ✅ API 1 — Employee Dropdown
-    axios.get('http://localhost:3000/api/hr/employees', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    //  API 1 — Employee Dropdown
+    axios.get(`${API_BASE_URL}/hr/employees`, {
+      headers: getAuthHeaders()
     }).then(res => setEmployees(res.data.data.employees))
       .catch(() => showToast('Failed to fetch employees'))
 
-    // ✅ API 2 — Leave Types Checkboxes
-    axios.get('http://localhost:3000/api/employee/leave/types', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    axios.get(`${API_BASE_URL}/employee/leave/types`, {
+      headers: getAuthHeaders()
     }).then(res => setLeaveTypes(res.data.data.leave_types))
       .catch(() => showToast('Failed to fetch leave types'))
 
@@ -57,18 +57,16 @@ const AddLeaveBalance = () => {
     setLoading(true)
     try {
 
-      // ✅ API 3 — Save: POST /api/hr/employees/:id/balances
+      //  API 3 — Save: POST /api/hr/employees/:id/balances
       const payload = Object.entries(leaveForm).map(([leave_type_id, total_allowed]) => ({
         leave_type_id: Number(leave_type_id),
         total_allowed: Number(total_allowed)
       }))
 
       await axios.post(
-        `http://localhost:3000/api/hr/employees/${selectedEmp}/balances`,
+        `${API_BASE_URL}/hr/employees/${selectedEmp}/balances`,
         payload,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        }
+        { headers: getAuthHeaders() }
       )
 
       const emp = employees.find((e) => e.id === Number(selectedEmp))
@@ -113,7 +111,7 @@ const AddLeaveBalance = () => {
 
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
 
-            {/* ✅ Employee Dropdown — API 1 */}
+            {/*  Employee Dropdown — API 1 */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                 Employee <span className="text-danger">*</span>
@@ -133,7 +131,7 @@ const AddLeaveBalance = () => {
               {errors.emp && <p className="text-xs text-danger">{errors.emp}</p>}
             </div>
 
-            {/* ✅ Leave Types Checkboxes — API 2 */}
+            {/*  Leave Types Checkboxes — API 2 */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                 Leave Types <span className="text-danger">*</span>
@@ -159,7 +157,7 @@ const AddLeaveBalance = () => {
                       >
                         {isChecked && (
                           <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
                       </div>

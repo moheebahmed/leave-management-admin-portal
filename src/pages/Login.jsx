@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import axios from 'axios'
+import { API_BASE_URL } from '../api/config'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -23,7 +24,7 @@ const Login = () => {
     setLoading(true)
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
         password
       })
@@ -39,7 +40,6 @@ const Login = () => {
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('isAuthenticated', 'true')
 
-      // Trigger custom event to notify App component
       window.dispatchEvent(new Event('auth-change'))
 
       navigate('/', { replace: true })
@@ -109,7 +109,7 @@ const Login = () => {
             <h1 className="font-syne text-4xl font-bold text-white mb-3">
               Welcome
             </h1>
-            <p className="text-slate-400 text-sm uppercase tracking-wider">
+            <p className="text-slate-300 text-sm uppercase tracking-wider">
               Please login to Admin Dashboard
             </p>
           </div>
@@ -143,7 +143,7 @@ const Login = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                   disabled={loading}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                 </button>
               </div>
             </div>

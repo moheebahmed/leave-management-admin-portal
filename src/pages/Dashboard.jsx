@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Users, Calendar, Briefcase, AlertCircle, CheckCircle } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 import StatCard from '../components/StatCard'
 import Avatar from '../components/Avatar'
 import { useApp } from '../layouts/DashboardLayout'
@@ -20,8 +21,6 @@ const Dashboard = () => {
   const [recentActivity, setRecentActivity] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const headers = { Authorization: `Bearer ${localStorage.getItem('token')}` }
-
   useEffect(() => {
     fetchDashboardData()
   }, [])
@@ -29,8 +28,8 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const [requestsRes, typesRes] = await Promise.all([
-        axios.get('http://localhost:3000/api/hr/leave/requests', { headers }),
-        axios.get('http://localhost:3000/api/employee/leave/types', { headers }),
+        axios.get(`${API_BASE_URL}/hr/leave/requests`, { headers: getAuthHeaders() }),
+        axios.get(`${API_BASE_URL}/employee/leave/types`, { headers: getAuthHeaders() }),
       ])
 
       const allRequests = requestsRes.data.data.requests || []
@@ -50,9 +49,9 @@ const Dashboard = () => {
   const handleStatusChange = async (id, status) => {
     try {
       await axios.put(
-        `http://localhost:3000/api/hr/leave/requests/${id}/status`,
+        `${API_BASE_URL}/hr/leave/requests/${id}/status`,
         { status },
-        { headers }
+        { headers: getAuthHeaders() }
       )
       setPendingRequests((prev) => prev.filter((r) => r.id !== id))
       showToast(`Request ${status === 'APPROVED' ? 'approved' : 'rejected'} successfully`)
@@ -199,38 +198,38 @@ const Dashboard = () => {
             {loading ? (
               <tr><td colSpan={5} className="table-td text-center text-slate-500 py-6">Loading...</td></tr>
             ) : (pendingRequests.length > 0 ? pendingRequests : DUMMY_PENDING).map((req, i) => (
-                <tr key={req.id} className={`table-row-hover last:[&>td]:border-0 ${req.id?.toString().startsWith('dummy') ? 'opacity-40 pointer-events-none' : ''}`}>
-                  <td className="table-td">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar name={req.Employee?.full_name || 'Unknown'} index={i} size="sm" />
-                      <span className="font-medium text-slate-200">{req.Employee?.full_name || '—'}</span>
-                    </div>
-                  </td>
-                  <td className="table-td text-slate-400">{req.LeaveType?.name || '—'}</td>
-                  <td className="table-td font-semibold text-slate-300">{req.total_days}d</td>
-                  <td className="table-td">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-accent/10 text-accent">
-                      Pending
-                    </span>
-                  </td>
-                  <td className="table-td">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleStatusChange(req.id, 'APPROVED')}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors"
-                      >
-                        <CheckCircle size={11} /> Approve
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(req.id, 'REJECTED')}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              <tr key={req.id} className={`table-row-hover last:[&>td]:border-0 ${req.id?.toString().startsWith('dummy') ? 'opacity-40 pointer-events-none' : ''}`}>
+                <td className="table-td">
+                  <div className="flex items-center gap-2.5">
+                    <Avatar name={req.Employee?.full_name || 'Unknown'} index={i} size="sm" />
+                    <span className="font-medium text-slate-200">{req.Employee?.full_name || '—'}</span>
+                  </div>
+                </td>
+                <td className="table-td text-slate-400">{req.LeaveType?.name || '—'}</td>
+                <td className="table-td font-semibold text-slate-300">{req.total_days}d</td>
+                <td className="table-td">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-accent/10 text-accent">
+                    Pending
+                  </span>
+                </td>
+                <td className="table-td">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => handleStatusChange(req.id, 'APPROVED')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors"
+                    >
+                      <CheckCircle size={11} /> Approve
+                    </button>
+                    <button
+                      onClick={() => handleStatusChange(req.id, 'REJECTED')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
             }
           </tbody>
         </table>

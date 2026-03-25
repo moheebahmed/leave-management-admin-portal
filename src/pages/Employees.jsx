@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { UserPlus, Pencil, Trash2, Search } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 import { useApp } from '../layouts/DashboardLayout'
 import { TableWrapper, EmptyState } from '../components/Table'
 import { DeptBadge } from '../components/Badge'
@@ -18,10 +19,8 @@ const Employees = () => {
 
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/hr/employees', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
+    const res = await axios.get(`${API_BASE_URL}/hr/employees`, {
+        headers: getAuthHeaders()
       })
       setEmployees(res.data.data.employees)
     } catch (error) {

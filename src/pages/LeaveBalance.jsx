@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { PlusCircle, Pencil, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
 import { useApp } from '../layouts/DashboardLayout'
 import { TableWrapper, EmptyState } from '../components/Table'
 import Avatar from '../components/Avatar'
@@ -39,22 +40,19 @@ const LeaveBalance = () => {
       setLoading(true)
 
        
-      const empRes = await axios.get('http://localhost:3000/api/hr/employees', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const empRes = await axios.get(`${API_BASE_URL}/hr/employees`, {
+        headers: getAuthHeaders()
       })
       const employees = empRes.data.data.employees
 
-      
       const grouped = []
 
       await Promise.all(
         employees.map(async (emp, empIndex) => {
           try {
             const balRes = await axios.get(
-              `http://localhost:3000/api/hr/employees/${emp.id}/balances`,
-              {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-              }
+              `${API_BASE_URL}/hr/employees/${emp.id}/balances`,
+              { headers: getAuthHeaders() }
             )
             const balances = balRes.data.data.balances
 
