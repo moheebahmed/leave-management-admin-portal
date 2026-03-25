@@ -370,7 +370,7 @@ const LeaveRequests = () => {
         ) : filtered.length === 0 ? (
           <EmptyState message="No leave requests found." />
         ) : (
-          <table className="w-full h-[53.5vh]">
+          <table className="w-full">
             <thead>
               <tr className="bg-[#000000]">
                 <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee</th>
