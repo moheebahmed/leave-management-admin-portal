@@ -88,6 +88,18 @@ const LeaveBalance = () => {
     }))
   }
 
+  const handleDeleteBalance = async (empId, empName) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/hr/employees/${empId}/balances`, {
+        headers: getAuthHeaders()
+      })
+      setGroupedBalances((prev) => prev.filter((g) => g.empId !== empId))
+      showToast(`Leave balance for ${empName} has been deleted.`)
+    } catch {
+      showToast('Failed to delete leave balance')
+    }
+  }
+
   // Total records count
   const totalRecords = groupedBalances.reduce((sum, g) => sum + g.balances.length, 0)
 
@@ -172,14 +184,14 @@ const LeaveBalance = () => {
                         <button
                           className="btn-ghost hover:!bg-accent/10 hover:!text-accent hover:!border-accent/30"
                           title="Edit"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/edit-leave/${group.empId}`) }}
                         >
                           <Pencil size={13} />
                         </button>
                         <button
                           className="btn-ghost hover:!bg-danger/10 hover:!text-danger hover:!border-danger/30"
                           title="Delete"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteBalance(group.empId, group.employeeName) }}
                         >
                           <Trash2 size={13} />
                         </button>

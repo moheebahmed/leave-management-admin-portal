@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle, ArrowLeft, Info } from 'lucide-react'
 import { useApp } from '../layouts/DashboardLayout'
 import axios from 'axios'
@@ -7,17 +7,17 @@ import { API_BASE_URL, getAuthHeaders } from '../api/config'
 
 const AddLeaveBalance = () => {
   const navigate = useNavigate()
+  const { empId } = useParams()
+  const isEdit = Boolean(empId)
   const { showToast } = useApp()
   const [employees, setEmployees] = useState([])
   const [leaveTypes, setLeaveTypes] = useState([])
-  const [selectedEmp, setSelectedEmp] = useState('')
+  const [selectedEmp, setSelectedEmp] = useState(empId || '')
   const [leaveForm, setLeaveForm] = useState({})
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-
-    //  API 1 — Employee Dropdown
     axios.get(`${API_BASE_URL}/hr/employees`, {
       headers: getAuthHeaders()
     }).then(res => setEmployees(res.data.data.employees))
@@ -25,9 +25,23 @@ const AddLeaveBalance = () => {
 
     axios.get(`${API_BASE_URL}/employee/leave/types`, {
       headers: getAuthHeaders()
-    }).then(res => setLeaveTypes(res.data.data.leave_types))
-      .catch(() => showToast('Failed to fetch leave types'))
+    }).then(res => {
+      const types = res.data.data.leave_types
+      setLeaveTypes(types)
 
+      // If edit mode, pre-fill existing balances
+      if (empId) {
+        axios.get(`${API_BASE_URL}/hr/employees/${empId}/balances`, { headers: getAuthHeaders() })
+          .then(balRes => {
+            const balances = balRes.data.data.balances
+            const prefilled = {}
+            balances.forEach(b => { prefilled[b.leave_type_id] = b.total_allowed })
+            setLeaveForm(prefilled)
+          })
+          .catch(() => {})
+      }
+    })
+      .catch(() => showToast('Failed to fetch leave types'))
   }, [])
 
   const toggleLeave = (id) => {
@@ -56,21 +70,27 @@ const AddLeaveBalance = () => {
 
     setLoading(true)
     try {
-
-      //  API 3 — Save: POST /api/hr/employees/:id/balances
       const payload = Object.entries(leaveForm).map(([leave_type_id, total_allowed]) => ({
         leave_type_id: Number(leave_type_id),
         total_allowed: Number(total_allowed)
       }))
 
-      await axios.post(
-        `${API_BASE_URL}/hr/employees/${selectedEmp}/balances`,
-        payload,
-        { headers: getAuthHeaders() }
-      )
+      if (isEdit) {
+        await axios.put(
+          `${API_BASE_URL}/hr/employees/${selectedEmp}/balances`,
+          payload,
+          { headers: getAuthHeaders() }
+        )
+      } else {
+        await axios.post(
+          `${API_BASE_URL}/hr/employees/${selectedEmp}/balances`,
+          payload,
+          { headers: getAuthHeaders() }
+        )
+      }
 
       const emp = employees.find((e) => e.id === Number(selectedEmp))
-      showToast(`Leave balance saved for ${emp?.full_name}!`)
+      showToast(`Leave balance ${isEdit ? 'updated' : 'saved'} for ${emp?.full_name}!`)
       navigate('/leave-balance')
 
     } catch (error) {
@@ -94,11 +114,11 @@ const AddLeaveBalance = () => {
         </button>
         <div>
           <h2 className="page-title">
-            <span className="text-accent font-bold">Add</span>{' '}
+            <span className="text-accent font-bold">{isEdit ? 'Edit' : 'Add'}</span>{' '}
             <span className="text-white font-bold">Leave Balance</span>
           </h2>
           <p className="page-subtitle mt-0.5 font-semibold text-[rgb(173,173,173)]">
-            Assign leave quotas to an employee.
+            {isEdit ? 'Update leave quotas for this employee.' : 'Assign leave quotas to an employee.'}
           </p>
         </div>
       </div>
@@ -117,9 +137,10 @@ const AddLeaveBalance = () => {
                 Employee <span className="text-danger">*</span>
               </label>
               <select
-                className={`form-input-base cursor-pointer ${errors.emp ? '!border-danger' : ''}`}
+                className={`form-input-base cursor-pointer ${errors.emp ? '!border-danger' : ''} ${isEdit ? 'opacity-60 cursor-not-allowed' : ''}`}
                 value={selectedEmp}
-                onChange={(e) => setSelectedEmp(e.target.value)}
+                onChange={(e) => !isEdit && setSelectedEmp(e.target.value)}
+                disabled={isEdit}
               >
                 <option value="">Select an employee…</option>
                 {employees.map((emp) => (
@@ -199,7 +220,7 @@ const AddLeaveBalance = () => {
             <div className="flex gap-3 pt-2">
               <button type="submit" className="btn-primary" disabled={loading}>
                 <CheckCircle size={14} />
-                {loading ? 'Saving...' : 'Save Balance'}
+                {loading ? 'Saving...' : (isEdit ? 'Update Balance' : 'Save Balance')}
               </button>
               <button type="button" className="btn-outline" onClick={() => navigate('/leave-balance')}>
                 Cancel

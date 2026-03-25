@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { UserPlus, ArrowLeft } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { UserPlus, Save, ArrowLeft } from 'lucide-react'
 import { useApp } from '../layouts/DashboardLayout'
 import { DEPARTMENTS } from '../data/initialData'
 import axios from 'axios'
@@ -20,10 +20,33 @@ const INITIAL_FORM = {
 
 const AddEmployee = () => {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const isEdit = Boolean(id)
   const { setEmployees, showToast } = useApp()
   const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (isEdit) {
+      axios.get(`${API_BASE_URL}/hr/employees/${id}`, { headers: getAuthHeaders() })
+        .then(res => {
+          const emp = res.data.data.employee
+          setForm({
+            full_name: emp.full_name || '',
+            email: emp.User?.email || '',
+            password: '',
+            role: emp.User?.role || 'EMPLOYEE',
+            department: emp.department || '',
+            designation: emp.designation || '',
+            joining_date: emp.joining_date ? emp.joining_date.split('T')[0] : '',
+            confirmation_date: emp.confirmation_date ? emp.confirmation_date.split('T')[0] : '',
+            employee_code: emp.employee_code || '',
+          })
+        })
+        .catch(() => showToast('Failed to fetch employee details'))
+    }
+  }, [id])
 
   const set = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -34,7 +57,7 @@ const AddEmployee = () => {
     const e = {}
     if (!form.full_name.trim()) e.full_name = 'Full name is required'
     if (!form.email.trim() || !form.email.includes('@')) e.email = 'A valid email is required'
-    if (!form.password.trim() || form.password.length < 6) e.password = 'Password must be at least 6 characters'
+    if (!isEdit && (!form.password.trim() || form.password.length < 6)) e.password = 'Password must be at least 6 characters'
     if (!form.department) e.department = 'Please select a department'
     if (!form.designation.trim()) e.designation = 'Designation is required'
     if (!form.joining_date) e.joining_date = 'Joining date is required'
@@ -50,20 +73,27 @@ const AddEmployee = () => {
 
     setLoading(true)
     try {
-      //   Step 1: POST /api/auth/register —  
-      await axios.post(`${API_BASE_URL}/auth/register`, form, {
-        headers: getAuthHeaders()
-      })
+      if (isEdit) {
+        const payload = { ...form }
+        if (!payload.password) delete payload.password
+        await axios.put(`${API_BASE_URL}/hr/employees/${id}`, payload, {
+          headers: getAuthHeaders()
+        })
+      } else {
+        await axios.post(`${API_BASE_URL}/auth/register`, form, {
+          headers: getAuthHeaders()
+        })
+      }
 
       const res = await axios.get(`${API_BASE_URL}/hr/employees`, {
         headers: getAuthHeaders()
       })
       setEmployees(res.data.data.employees)
 
-      showToast(`${form.full_name} has been added successfully!`)
+      showToast(`${form.full_name} has been ${isEdit ? 'updated' : 'added'} successfully!`)
       navigate('/employees')
     } catch (error) {
-      const msg = error.response?.data?.message || 'Failed to add employee'
+      const msg = error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'add'} employee`
       showToast(msg)
     } finally {
       setLoading(false)
@@ -82,10 +112,10 @@ const AddEmployee = () => {
         </button>
         <div>
           <h2 className="page-title">
-            <span className="text-accent font-bold">Add</span>{' '}
-            <span className="text-white font-bold">New Employee</span>
+            <span className="text-accent font-bold">{isEdit ? 'Edit' : 'Add'}</span>{' '}
+            <span className="text-white font-bold">{isEdit ? 'Employee' : 'New Employee'}</span>
           </h2>
-          <p className="page-subtitle mt-0.5 font-semibold text-[rgb(173,173,173)]">Fill in the details to register a new team member.</p>
+          <p className="page-subtitle mt-0.5 font-semibold text-[rgb(173,173,173)]">{isEdit ? 'Update employee details.' : 'Fill in the details to register a new team member.'}</p>
         </div>
       </div>
 
@@ -126,7 +156,8 @@ const AddEmployee = () => {
                 {errors.email && <p className="text-xs text-danger">{errors.email}</p>}
               </div>
 
-              {/* Password */}
+              {/* Password - hide in edit mode */}
+              {!isEdit && (
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                   Password <span className="text-danger">*</span>
@@ -140,6 +171,7 @@ const AddEmployee = () => {
                 />
                 {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
               </div>
+              )}
 
               {/* Employee Code */}
               <div className="space-y-1.5">
@@ -236,8 +268,8 @@ const AddEmployee = () => {
             {/* Buttons */}
             <div className="flex gap-3 mt-6">
               <button type="submit" className="btn-primary" disabled={loading}>
-                <UserPlus size={14} />
-                {loading ? 'Adding...' : 'Add Employee'}
+                {isEdit ? <Save size={14} /> : <UserPlus size={14} />}
+                {loading ? (isEdit ? 'Updating...' : 'Adding...') : (isEdit ? 'Update Employee' : 'Add Employee')}
               </button>
               <button
                 type="button"

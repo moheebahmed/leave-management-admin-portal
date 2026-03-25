@@ -50,9 +50,11 @@ const App = () => {
         <Route index element={<Dashboard />} />
         <Route path="employees" element={<Employees />} />
         <Route path="add-employee" element={<AddEmployee />} />
+        <Route path="edit-employee/:id" element={<AddEmployee />} />
         <Route path="leave-requests" element={<LeaveRequests />} />
         <Route path="leave-balance" element={<LeaveBalance />} />
         <Route path="add-leave" element={<AddLeaveBalance />} />
+        <Route path="edit-leave/:empId" element={<AddLeaveBalance />} />
         <Route path="notifications" element={<Notifications />} />
       </Route>
 

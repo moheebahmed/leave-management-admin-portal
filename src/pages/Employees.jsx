@@ -141,6 +141,7 @@ const Employees = () => {
                       <button
                         className="btn-ghost hover:!bg-accent/10 hover:!text-accent hover:!border-accent/30"
                         title="Edit"
+                        onClick={() => navigate(`/edit-employee/${emp.id}`)}
                       >
                         <Pencil size={13} />
                       </button>
