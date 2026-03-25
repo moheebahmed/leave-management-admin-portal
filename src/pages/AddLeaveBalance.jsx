@@ -11,6 +11,7 @@ const AddLeaveBalance = () => {
   const isEdit = Boolean(empId)
   const { showToast } = useApp()
   const [employees, setEmployees] = useState([])
+  const [employeesWithBalance, setEmployeesWithBalance] = useState([])
   const [leaveTypes, setLeaveTypes] = useState([])
   const [selectedEmp, setSelectedEmp] = useState(empId || '')
   const [leaveForm, setLeaveForm] = useState({})
@@ -20,7 +21,24 @@ const AddLeaveBalance = () => {
   useEffect(() => {
     axios.get(`${API_BASE_URL}/hr/employees`, {
       headers: getAuthHeaders()
-    }).then(res => setEmployees(res.data.data.employees))
+    }).then(async res => {
+      const allEmployees = res.data.data.employees
+      setEmployees(allEmployees)
+
+      // Find which employees already have a balance (only in add mode)
+      if (!isEdit) {
+        const withBalance = []
+        await Promise.all(
+          allEmployees.map(async (emp) => {
+            try {
+              const balRes = await axios.get(`${API_BASE_URL}/hr/employees/${emp.id}/balances`, { headers: getAuthHeaders() })
+              if (balRes.data.data.balances.length > 0) withBalance.push(emp.id)
+            } catch { /* skip */ }
+          })
+        )
+        setEmployeesWithBalance(withBalance)
+      }
+    })
       .catch(() => showToast('Failed to fetch employees'))
 
     axios.get(`${API_BASE_URL}/employee/leave/types`, {
@@ -143,11 +161,14 @@ const AddLeaveBalance = () => {
                 disabled={isEdit}
               >
                 <option value="">Select an employee…</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.id} className="bg-card">
-                    {emp.full_name} — {emp.department}
-                  </option>
-                ))}
+                {employees
+                  .filter((emp) => !employeesWithBalance.includes(emp.id))
+                  .map((emp) => (
+                    <option key={emp.id} value={emp.id} className="bg-card">
+                      {emp.full_name} — {emp.department}
+                    </option>
+                  ))
+                }
               </select>
               {errors.emp && <p className="text-xs text-danger">{errors.emp}</p>}
             </div>
