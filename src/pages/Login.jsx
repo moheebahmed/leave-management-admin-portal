@@ -85,7 +85,7 @@ const Login = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-base">
+      <div className="login-form-side w-full lg:w-1/2 flex items-center justify-center p-8 bg-base">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
@@ -105,7 +105,7 @@ const Login = () => {
           </div>
 
           {/* Welcome Text */}
-          <div className="mb-8">
+          <div className="login-welcome mb-8">
             <h1 className="font-syne text-4xl font-bold text-white mb-3">
               Welcome
             </h1>
@@ -173,7 +173,7 @@ const Login = () => {
             <div className="text-center pt-2">
               <button
                 type="button"
-                className="text-sm text-slate-400 hover:text-slate-300 transition-colors uppercase tracking-wider"
+                className="forgot-btn text-sm text-slate-400 hover:text-slate-300 transition-colors uppercase tracking-wider"
               >
                 Forgotten Your Password?
               </button>
