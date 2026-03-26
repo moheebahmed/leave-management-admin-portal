@@ -10,7 +10,7 @@ const Notifications = () => {
   useEffect(() => {
     axios.get(`${API_BASE_URL}/employee/notifications`, { headers: getAuthHeaders() })
       .then(res => setNotifications(res.data.data.notifications || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false))
   }, [])
 

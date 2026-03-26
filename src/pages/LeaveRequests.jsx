@@ -396,7 +396,7 @@ const LeaveRequests = () => {
                     onClick={() => setModalRequest(req)}
                   >
 
-                   
+
                     {rowIndex === 0 && (
                       <td
                         className="table-td align-middle"
