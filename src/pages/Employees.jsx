@@ -19,7 +19,7 @@ const Employees = () => {
 
   const fetchEmployees = async () => {
     try {
-    const res = await axios.get(`${API_BASE_URL}/hr/employees`, {
+      const res = await axios.get(`${API_BASE_URL}/hr/employees`, {
         headers: getAuthHeaders()
       })
       setEmployees(res.data.data.employees)

@@ -158,19 +158,19 @@ const AddEmployee = () => {
 
               {/* Password - hide in edit mode */}
               {!isEdit && (
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-                  Password <span className="text-danger">*</span>
-                </label>
-                <input
-                  type="password"
-                  className={inputClass('password')}
-                  placeholder="Enter password"
-                  value={form.password}
-                  onChange={(e) => set('password', e.target.value)}
-                />
-                {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
-              </div>
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                    Password <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    className={inputClass('password')}
+                    placeholder="Enter password"
+                    value={form.password}
+                    onChange={(e) => set('password', e.target.value)}
+                  />
+                  {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
+                </div>
               )}
 
               {/* Employee Code */}

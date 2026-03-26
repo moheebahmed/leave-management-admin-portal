@@ -185,55 +185,55 @@ const Dashboard = () => {
           </span>
         </div>
         <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr>
-              <th className="table-th">Employee</th>
-              <th className="table-th whitespace-nowrap">Leave Type</th>
-              <th className="table-th">Days</th>
-              <th className="table-th">Status</th>
-              <th className="table-th text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr><td colSpan={5} className="table-td text-center text-slate-500 py-6">Loading...</td></tr>
-            ) : (pendingRequests.length > 0 ? pendingRequests : DUMMY_PENDING).map((req, i) => (
-              <tr key={req.id} className={`table-row-hover last:[&>td]:border-0 ${req.id?.toString().startsWith('dummy') ? 'opacity-40 pointer-events-none' : ''}`}>
-                <td className="table-td">
-                  <div className="flex items-center gap-2.5">
-                    <Avatar name={req.Employee?.full_name || 'Unknown'} index={i} size="sm" />
-                    <span className="font-medium text-slate-200 whitespace-nowrap">{req.Employee?.full_name || '—'}</span>
-                  </div>
-                </td>
-                <td className="table-td text-slate-400 whitespace-nowrap">{req.LeaveType?.name || '—'}</td>
-                <td className="table-td font-semibold text-slate-300">{req.total_days}d</td>
-                <td className="table-td">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-accent/10 text-accent">
-                    Pending
-                  </span>
-                </td>
-                <td className="table-td">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => handleStatusChange(req.id, 'APPROVED')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors"
-                    >
-                      <CheckCircle size={11} /> Approve
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(req.id, 'REJECTED')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
-                </td>
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="table-th">Employee</th>
+                <th className="table-th whitespace-nowrap">Leave Type</th>
+                <th className="table-th">Days</th>
+                <th className="table-th">Status</th>
+                <th className="table-th text-right">Actions</th>
               </tr>
-            ))
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="table-td text-center text-slate-500 py-6">Loading...</td></tr>
+              ) : (pendingRequests.length > 0 ? pendingRequests : DUMMY_PENDING).map((req, i) => (
+                <tr key={req.id} className={`table-row-hover last:[&>td]:border-0 ${req.id?.toString().startsWith('dummy') ? 'opacity-40 pointer-events-none' : ''}`}>
+                  <td className="table-td">
+                    <div className="flex items-center gap-2.5">
+                      <Avatar name={req.Employee?.full_name || 'Unknown'} index={i} size="sm" />
+                      <span className="font-medium text-slate-200 whitespace-nowrap">{req.Employee?.full_name || '—'}</span>
+                    </div>
+                  </td>
+                  <td className="table-td text-slate-400 whitespace-nowrap">{req.LeaveType?.name || '—'}</td>
+                  <td className="table-td font-semibold text-slate-300">{req.total_days}d</td>
+                  <td className="table-td">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-accent/10 text-accent">
+                      Pending
+                    </span>
+                  </td>
+                  <td className="table-td">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleStatusChange(req.id, 'APPROVED')}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors"
+                      >
+                        <CheckCircle size={11} /> Approve
+                      </button>
+                      <button
+                        onClick={() => handleStatusChange(req.id, 'REJECTED')}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+              }
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

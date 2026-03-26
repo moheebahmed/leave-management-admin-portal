@@ -39,7 +39,7 @@ const LeaveBalance = () => {
     try {
       setLoading(true)
 
-       
+
       const empRes = await axios.get(`${API_BASE_URL}/hr/employees`, {
         headers: getAuthHeaders()
       })
