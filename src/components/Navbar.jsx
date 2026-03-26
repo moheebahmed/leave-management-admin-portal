@@ -15,11 +15,11 @@ const Navbar = ({ toggleSidebar }) => {
   const navigate = useNavigate()
   const title = PAGE_TITLES[pathname] || 'Dashboard'
   const [showLogoutMenu, setShowLogoutMenu] = useState(false)
-  const userEmail = localStorage.getItem('userEmail') || 'hr@conceptrecall.com'
+  const userEmail = sessionStorage.getItem('userEmail') || 'hr@conceptrecall.com'
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('userEmail')
+    sessionStorage.clear()
+    window.dispatchEvent(new Event('auth-change'))
     navigate('/login')
   }
 

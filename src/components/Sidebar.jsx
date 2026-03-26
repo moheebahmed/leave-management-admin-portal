@@ -45,14 +45,8 @@ const Sidebar = ({ collapsed, onClose }) => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem('userEmail')
-    
-    // Trigger custom event to notify App component
+    sessionStorage.clear()
     window.dispatchEvent(new Event('auth-change'))
-    
     navigate('/login', { replace: true })
   }
 
