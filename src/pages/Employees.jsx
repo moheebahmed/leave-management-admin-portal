@@ -78,14 +78,14 @@ const Employees = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-[#000000]">
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee Code</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Department</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Designation</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Joining Date</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Confirmation</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Role</th>
-                <th className="table-th text-center font-semibold text-[rgb(173,173,173)] mr-4">Actions</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Employee Code</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Employee</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Department</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Designation</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Joining Date</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Confirmation</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Role</th>
+                <th className="table-th text-center font-semibold text-[rgb(173,173,173)] whitespace-nowrap mr-4">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -94,7 +94,7 @@ const Employees = () => {
 
                   {/* Employee Code */}
                   <td className="table-td">
-                    <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
+                    <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border whitespace-nowrap">
                       {emp.employee_code}
                     </span>
                   </td>
@@ -104,32 +104,32 @@ const Employees = () => {
                     <div className="flex items-center gap-3">
                       <Avatar name={emp.full_name} index={i} />
                       <div>
-                        <div className="font-medium text-slate-200 text-[13.5px]">{emp.full_name}</div>
-                        <div className="text-xs text-slate-500">{emp.User?.email}</div>
+                        <div className="font-medium text-slate-200 text-[13.5px] whitespace-nowrap">{emp.full_name}</div>
+                        <div className="text-xs text-slate-500 whitespace-nowrap">{emp.User?.email}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Department */}
-                  <td className="table-td">
+                  <td className="table-td whitespace-nowrap">
                     <DeptBadge department={emp.department} />
                   </td>
 
                   {/* Designation */}
-                  <td className="table-td text-slate-400 text-[12.5px]">{emp.designation}</td>
+                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">{emp.designation}</td>
 
                   {/* Joining Date */}
-                  <td className="table-td text-slate-400 text-[12.5px]">
+                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {emp.joining_date ? new Date(emp.joining_date).toLocaleDateString() : '—'}
                   </td>
 
                   {/* Confirmation Date */}
-                  <td className="table-td text-slate-400 text-[12.5px]">
+                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {emp.confirmation_date ? new Date(emp.confirmation_date).toLocaleDateString() : '—'}
                   </td>
 
                   {/* Role */}
-                  <td className="table-td">
+                  <td className="table-td whitespace-nowrap">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
                       {emp.User?.role}
                     </span>

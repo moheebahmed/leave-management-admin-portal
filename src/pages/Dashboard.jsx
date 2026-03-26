@@ -189,7 +189,7 @@ const Dashboard = () => {
           <thead>
             <tr>
               <th className="table-th">Employee</th>
-              <th className="table-th">Leave Type</th>
+              <th className="table-th whitespace-nowrap">Leave Type</th>
               <th className="table-th">Days</th>
               <th className="table-th">Status</th>
               <th className="table-th text-right">Actions</th>
@@ -203,10 +203,10 @@ const Dashboard = () => {
                 <td className="table-td">
                   <div className="flex items-center gap-2.5">
                     <Avatar name={req.Employee?.full_name || 'Unknown'} index={i} size="sm" />
-                    <span className="font-medium text-slate-200">{req.Employee?.full_name || '—'}</span>
+                    <span className="font-medium text-slate-200 whitespace-nowrap">{req.Employee?.full_name || '—'}</span>
                   </div>
                 </td>
-                <td className="table-td text-slate-400">{req.LeaveType?.name || '—'}</td>
+                <td className="table-td text-slate-400 whitespace-nowrap">{req.LeaveType?.name || '—'}</td>
                 <td className="table-td font-semibold text-slate-300">{req.total_days}d</td>
                 <td className="table-td">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-accent/10 text-accent">

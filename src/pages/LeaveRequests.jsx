@@ -373,18 +373,18 @@ const LeaveRequests = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-[#000000]">
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">ID</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Leave Type</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Start Date</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">End Date</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Total Days</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Reason</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Status</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Actioned By</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Feedback</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Lead Approval</th>
-                <th className="table-th text-center font-semibold text-[rgb(173,173,173)]">Actions</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Employee</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">ID</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Leave Type</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Start Date</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">End Date</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Total Days</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Reason</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Status</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Actioned By</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Feedback</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Lead Approval</th>
+                <th className="table-th text-center font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -410,7 +410,7 @@ const LeaveRequests = () => {
                       >
                         <div className="flex items-center gap-2.5">
                           <Avatar name={req.Employee?.full_name || 'Unknown'} index={groupIndex} size="sm" />
-                          <span className="font-medium text-slate-200 text-[13.5px]">
+                          <span className="font-medium text-slate-200 text-[13.5px] whitespace-nowrap">
                             {req.Employee?.full_name || '—'}
                           </span>
                         </div>
@@ -432,19 +432,19 @@ const LeaveRequests = () => {
                     </td>
 
                     {/* Leave Type */}
-                    <td className="table-td">
+                    <td className="table-td whitespace-nowrap">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-cyan/10 text-cyan border border-cyan/20">
                         {req.LeaveType?.name || '—'}
                       </span>
                     </td>
 
                     {/* Start Date */}
-                    <td className="table-td text-slate-400 text-[12.5px]">
+                    <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                       {req.start_date ? new Date(req.start_date).toLocaleDateString() : '—'}
                     </td>
 
                     {/* End Date */}
-                    <td className="table-td text-slate-400 text-[12.5px]">
+                    <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                       {req.end_date ? new Date(req.end_date).toLocaleDateString() : '—'}
                     </td>
 

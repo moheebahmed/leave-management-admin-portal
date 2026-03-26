@@ -226,31 +226,31 @@ const LeaveTypes = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-[#000000]">
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Name</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Code</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Min Notice Days</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Allow Past Dates</th>
-                <th className="table-th text-right font-semibold text-[rgb(173,173,173)]">Actions</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Name</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Code</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Min Notice Days</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Allow Past Dates</th>
+                <th className="table-th text-right font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
               {leaveTypes.map((lt) => (
                 <tr key={lt.id} className="table-row-hover last:[&>td]:border-0">
                   <td className="table-td">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 whitespace-nowrap">
                       <Tag size={13} className="text-accent" />
                       <span className="font-medium text-slate-200 text-[13.5px]">{lt.name}</span>
                     </div>
                   </td>
-                  <td className="table-td">
+                  <td className="table-td whitespace-nowrap">
                     <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
                       {lt.code}
                     </span>
                   </td>
-                  <td className="table-td text-slate-400 text-[12.5px]">
+                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {lt.min_notice_days} days
                   </td>
-                  <td className="table-td text-slate-400 text-[12.5px]">
+                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {lt.allow_past_dates}
                   </td>
                   <td className="table-td">

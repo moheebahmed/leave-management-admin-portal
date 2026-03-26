@@ -2,9 +2,9 @@ import { Search } from 'lucide-react'
 
 export const TableWrapper = ({ title, action, children }) => (
   <div className="card-base overflow-visible">
-    <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-      <h2 className="section-title">{title}</h2>
-      {action && <div>{action}</div>}
+    <div className="flex flex-wrap items-center justify-between px-5 py-4 border-b border-border gap-3">
+      <h2 className="section-title whitespace-nowrap">{title}</h2>
+      {action && <div className="shrink-0">{action}</div>}
     </div>
     <div className="overflow-x-auto overflow-y-visible">{children}</div>
   </div>

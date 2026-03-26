@@ -133,10 +133,10 @@ const LeaveBalance = () => {
             <thead>
               <tr className="bg-[#000000]">
                 <th className="table-th font-semibold text-[rgb(173,173,173)] w-8"></th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Employee</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Department</th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)]">Leave Types</th>
-                <th className="table-th text-right font-semibold text-[rgb(173,173,173)]">Actions</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Employee</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Department</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Leave Types</th>
+                <th className="table-th text-right font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -160,19 +160,19 @@ const LeaveBalance = () => {
                     <td className="table-td">
                       <div className="flex items-center gap-2.5">
                         <Avatar name={group.employeeName} index={group.empIndex} size="sm" />
-                        <span className="font-medium text-slate-200 text-[13.5px]">
+                        <span className="font-medium text-slate-200 text-[13.5px] whitespace-nowrap">
                           {group.employeeName}
                         </span>
                       </div>
                     </td>
 
                     {/* Department */}
-                    <td className="table-td text-slate-400 text-[12.5px]">
+                    <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                       {group.department || '—'}
                     </td>
 
                     {/* Leave Types Count */}
-                    <td className="table-td">
+                    <td className="table-td whitespace-nowrap">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
                         {group.balances.length} leave types
                       </span>
