@@ -250,8 +250,12 @@ const LeaveTypes = () => {
                   <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {lt.min_notice_days} days
                   </td>
-                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
-                    {lt.allow_past_dates}
+                  <td className="table-td text-[12.5px] whitespace-nowrap">
+                    {lt.allow_past_dates ? (
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Yes</span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-danger/10 text-danger border border-danger/20">No</span>
+                    )}
                   </td>
                   <td className="table-td">
                     <div className="flex items-center justify-end gap-2">
