@@ -14,12 +14,12 @@ import ProtectedRoute from './components/ProtectedRoute'
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('isAuthenticated') === 'true'
+    sessionStorage.getItem('isAuthenticated') === 'true'
   )
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true')
+      setIsAuthenticated(sessionStorage.getItem('isAuthenticated') === 'true')
     }
 
     window.addEventListener('storage', handleStorageChange)

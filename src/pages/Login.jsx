@@ -36,9 +36,9 @@ const Login = () => {
         return
       }
 
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('isAuthenticated', 'true')
+      sessionStorage.setItem('token', token)
+      sessionStorage.setItem('user', JSON.stringify(user))
+      sessionStorage.setItem('isAuthenticated', 'true')
 
       window.dispatchEvent(new Event('auth-change'))
 
