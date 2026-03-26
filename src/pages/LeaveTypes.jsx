@@ -251,7 +251,7 @@ const LeaveTypes = () => {
                     {lt.min_notice_days} days
                   </td>
                   <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
-                    {String(lt.allow_past_dates)}
+                    {Number(lt.allow_past_dates)}
                   </td>
                   <td className="table-td">
                     <div className="flex items-center justify-end gap-2">
