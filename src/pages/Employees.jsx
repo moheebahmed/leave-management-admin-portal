@@ -35,9 +35,18 @@ const Employees = () => {
     e.employee_code?.toLowerCase().includes(search.toLowerCase())
   )
 
-  const handleDelete = (id, name) => {
-    setEmployees((prev) => prev.filter((e) => e.id !== id))
-    showToast(`${name} has been removed.`)
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return
+    try {
+      await axios.delete(`${API_BASE_URL}/hr/employees/${id}`, {
+        headers: getAuthHeaders()
+      })
+      setEmployees((prev) => prev.filter((e) => e.id !== id))
+      showToast(`${name} has been removed.`)
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to delete employee'
+      showToast(msg)
+    }
   }
 
   return (

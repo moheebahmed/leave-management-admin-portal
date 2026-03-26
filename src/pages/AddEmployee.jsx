@@ -76,7 +76,7 @@ const AddEmployee = () => {
       if (isEdit) {
         const payload = { ...form }
         if (!payload.password) delete payload.password
-        await axios.patch(`${API_BASE_URL}/hr/employees/${id}`, payload, {
+        await axios.put(`${API_BASE_URL}/hr/employees/${id}`, payload, {
           headers: getAuthHeaders()
         })
       } else {
