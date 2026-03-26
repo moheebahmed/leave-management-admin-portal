@@ -106,7 +106,7 @@ const LeaveBalance = () => {
   return (
     <div className="animate-fade-slide space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="page-title">
             <span className="text-accent font-bold">Leave</span>{' '}
@@ -116,7 +116,7 @@ const LeaveBalance = () => {
             {totalRecords} records tracked
           </p>
         </div>
-        <button className="btn-primary" onClick={() => navigate('/add-leave')}>
+        <button className="btn-primary self-start sm:self-auto" onClick={() => navigate('/add-leave')}>
           <PlusCircle size={14} />
           Add Balance
         </button>

@@ -110,7 +110,7 @@ const LeaveTypes = () => {
     <div className="animate-fade-slide space-y-5">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="page-title">
             <span className="text-accent font-bold">Leave</span>{' '}
@@ -121,7 +121,7 @@ const LeaveTypes = () => {
           </p>
         </div>
         {!showForm && (
-          <button className="btn-primary" onClick={() => setShowForm(true)}>
+          <button className="btn-primary self-start sm:self-auto" onClick={() => setShowForm(true)}>
             <Plus size={14} />
             Add Leave Type
           </button>

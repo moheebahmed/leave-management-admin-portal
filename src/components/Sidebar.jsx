@@ -9,6 +9,7 @@ import {
   LogOut,
   Bell,
   Tag,
+  X,
 } from 'lucide-react'
 
 const NAV_GROUPS = [
@@ -40,7 +41,7 @@ const NAV_GROUPS = [
   },
 ]
 
-const Sidebar = ({ collapsed }) => {
+const Sidebar = ({ collapsed, onClose }) => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -67,7 +68,7 @@ const Sidebar = ({ collapsed }) => {
         <div className="w-8 h-8 min-w-[32px] rounded-lg bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center font-syne font-black text-xs text-white shadow-[0_0_20px_rgba(224,77,51,0.22)]">
           LO
         </div>
-        <div className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <div className={`transition-opacity duration-200 flex-1 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="font-syne font-bold text-sm text-slate-100 whitespace-nowrap leading-tight">
             LeaveOS
           </div>
@@ -75,6 +76,15 @@ const Sidebar = ({ collapsed }) => {
             HR Suite
           </div>
         </div>
+        {/* Mobile close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden text-slate-500 hover:text-white transition-colors ml-auto"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -94,6 +104,7 @@ const Sidebar = ({ collapsed }) => {
                   key={to}
                   to={to}
                   end={end}
+                  onClick={onClose}
                   className={({ isActive }) =>
                     `relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 overflow-hidden whitespace-nowrap
                     ${

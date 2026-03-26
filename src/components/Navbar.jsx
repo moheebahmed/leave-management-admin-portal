@@ -35,7 +35,7 @@ const Navbar = ({ toggleSidebar }) => {
       </button>
 
       {/* Page title */}
-      <h1 className="font-syne font-semibold text-[15px] text-slate-100 flex-1">{title}</h1>
+      <h1 className="font-syne font-semibold text-[14px] text-slate-100 flex-1 truncate">{title}</h1>
 
       {/* Right side */}
       <div className="flex items-center gap-2">

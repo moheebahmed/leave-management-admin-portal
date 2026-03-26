@@ -109,7 +109,7 @@ const FeedbackModal = ({ request, onClose, onSave }) => {
       onClick={onClose}
     >
       <div
-        className="bg-[#111] border border-border rounded-xl shadow-2xl w-full max-w-md p-6 space-y-5"
+        className="bg-[#111] border border-border rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -322,7 +322,7 @@ const LeaveRequests = () => {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="page-title">
             <span className="text-accent font-bold">Leave</span>{' '}

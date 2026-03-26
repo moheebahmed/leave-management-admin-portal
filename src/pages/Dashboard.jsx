@@ -184,6 +184,7 @@ const Dashboard = () => {
             {pendingRequests.length} pending
           </span>
         </div>
+        <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr>
@@ -233,6 +234,7 @@ const Dashboard = () => {
             }
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   )

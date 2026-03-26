@@ -120,7 +120,7 @@ const AddEmployee = () => {
       </div>
 
       {/* Form Card */}
-      <div className="max-w-2xl">
+      <div className="max-w-2xl w-full">
         <div className="card-base p-6">
           <h3 className="section-title mb-5">Employee Information</h3>
 
