@@ -203,7 +203,7 @@ const AddEmployee = () => {
                 </select>
               </div>
 
-              {/* Department */}
+              {/* Departments */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                   Department <span className="text-danger">*</span>
