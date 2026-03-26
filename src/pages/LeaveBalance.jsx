@@ -207,12 +207,12 @@ const LeaveBalance = () => {
                           <table className="w-full">
                             <thead>
                               <tr className="bg-surface/50">
-                                <th className="table-th text-[11px] text-slate-500">Leave Type</th>
-                                <th className="table-th text-[11px] text-slate-500">Total</th>
-                                <th className="table-th text-[11px] text-slate-500">Used</th>
-                                <th className="table-th text-[11px] text-slate-500">Remaining</th>
-                                <th className="table-th text-[11px] text-slate-500" style={{ minWidth: 120 }}>Usage</th>
-                                <th className="table-th text-[11px] text-slate-500">Updated</th>
+                                <th className="table-th text-[11px] text-slate-500 whitespace-nowrap">Leave Type</th>
+                                <th className="table-th text-[11px] text-slate-500 whitespace-nowrap">Total</th>
+                                <th className="table-th text-[11px] text-slate-500 whitespace-nowrap">Used</th>
+                                <th className="table-th text-[11px] text-slate-500 whitespace-nowrap">Remaining</th>
+                                <th className="table-th text-[11px] text-slate-500 whitespace-nowrap" style={{ minWidth: 120 }}>Usage</th>
+                                <th className="table-th text-[11px] text-slate-500 whitespace-nowrap">Updated</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -220,16 +220,16 @@ const LeaveBalance = () => {
                                 const isLow = bal.remaining <= 2
                                 return (
                                   <tr key={bal.id} className="border-t border-border/50">
-                                    <td className="table-td">
+                                    <td className="table-td whitespace-nowrap">
                                       <Badge color="blue">{bal.LeaveType?.name || '—'}</Badge>
                                     </td>
-                                    <td className="table-td font-semibold text-slate-300 text-[13px]">
+                                    <td className="table-td font-semibold text-slate-300 text-[13px] whitespace-nowrap">
                                       {bal.total_allowed}
                                     </td>
-                                    <td className="table-td">
+                                    <td className="table-td whitespace-nowrap">
                                       <span className="font-medium text-accent text-[13px]">{bal.used}</span>
                                     </td>
-                                    <td className="table-td">
+                                    <td className="table-td whitespace-nowrap">
                                       <span className={`font-semibold text-[13px] ${isLow ? 'text-danger' : 'text-emerald'}`}>
                                         {bal.remaining}
                                       </span>
@@ -237,7 +237,7 @@ const LeaveBalance = () => {
                                     <td className="table-td" style={{ minWidth: 120 }}>
                                       <ProgressBar used={bal.used} total={bal.total_allowed} />
                                     </td>
-                                    <td className="table-td text-slate-500 text-[12px]">
+                                    <td className="table-td text-slate-500 text-[12px] whitespace-nowrap">
                                       {bal.updated_at
                                         ? new Date(bal.updated_at).toLocaleDateString()
                                         : '—'}
