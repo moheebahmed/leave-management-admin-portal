@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { UserPlus, Save, ArrowLeft } from 'lucide-react'
+import { UserPlus, Save, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useApp } from '../layouts/DashboardLayout'
 import { DEPARTMENTS } from '../data/initialData'
 import axios from 'axios'
@@ -26,6 +26,7 @@ const AddEmployee = () => {
   const [form, setForm] = useState(INITIAL_FORM)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (isEdit) {
@@ -162,13 +163,22 @@ const AddEmployee = () => {
                   <label className="block text-xs font-semibold text-slate-500 tracking-wide">
                     Password <span className="text-danger">*</span>
                   </label>
-                  <input
-                    type="password"
-                    className={inputClass('password')}
-                    placeholder="Enter password"
-                    value={form.password}
-                    onChange={(e) => set('password', e.target.value)}
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      className={inputClass('password')}
+                      placeholder="Enter password"
+                      value={form.password}
+                      onChange={(e) => set('password', e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                    >
+                      {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </button>
+                  </div>
                   {errors.password && <p className="text-xs text-danger">{errors.password}</p>}
                 </div>
               )}
