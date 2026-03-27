@@ -72,7 +72,7 @@ const Login = () => {
                 LeaveOS
               </div>
               <div className="text-sm font-semibold uppercase tracking-widest text-slate-400">
-                HR Suite
+                HR LEAVE MANAGEMENT PORTAL
               </div>
             </div>
           </div>
