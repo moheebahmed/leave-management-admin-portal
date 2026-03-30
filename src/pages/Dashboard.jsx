@@ -185,13 +185,13 @@ const Dashboard = () => {
           </span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-max sm:min-w-full">
             <thead>
               <tr>
                 <th className="table-th">Employee</th>
-                <th className="table-th whitespace-nowrap">Leave Type</th>
+                <th className="table-th whitespace-nowrap hidden sm:table-cell">Leave Type</th>
                 <th className="table-th">Days</th>
-                <th className="table-th">Status</th>
+                <th className="table-th hidden md:table-cell">Status</th>
                 <th className="table-th text-right">Actions</th>
               </tr>
             </thead>
@@ -203,29 +203,32 @@ const Dashboard = () => {
                   <td className="table-td">
                     <div className="flex items-center gap-2.5">
                       <Avatar name={req.Employee?.full_name || 'Unknown'} index={i} size="sm" />
-                      <span className="font-medium text-slate-200 whitespace-nowrap">{req.Employee?.full_name || '—'}</span>
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-slate-200 truncate block">{req.Employee?.full_name || '—'}</span>
+                        <span className="text-xs text-slate-500 sm:hidden">{req.LeaveType?.name || '—'}</span>
+                      </div>
                     </div>
                   </td>
-                  <td className="table-td text-slate-400 whitespace-nowrap">{req.LeaveType?.name || '—'}</td>
+                  <td className="table-td text-slate-400 whitespace-nowrap hidden sm:table-cell">{req.LeaveType?.name || '—'}</td>
                   <td className="table-td font-semibold text-slate-300">{req.total_days}d</td>
-                  <td className="table-td">
+                  <td className="table-td hidden md:table-cell">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-accent/10 text-accent">
                       Pending
                     </span>
                   </td>
                   <td className="table-td">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1 sm:gap-2">
                       <button
                         onClick={() => handleStatusChange(req.id, 'APPROVED')}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors"
+                        className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-1 rounded-lg bg-emerald/10 text-emerald hover:bg-emerald/20 transition-colors whitespace-nowrap"
                       >
-                        <CheckCircle size={11} /> Approve
+                        <CheckCircle size={10} className="hidden sm:inline" /> <span className="hidden sm:inline">Approve</span><span className="sm:hidden">✓</span>
                       </button>
                       <button
                         onClick={() => handleStatusChange(req.id, 'REJECTED')}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors"
+                        className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-1 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-colors whitespace-nowrap"
                       >
-                        Reject
+                        <span className="hidden sm:inline">Reject</span><span className="sm:hidden">✕</span>
                       </button>
                     </div>
                   </td>
