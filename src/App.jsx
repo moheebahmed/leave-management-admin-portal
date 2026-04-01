@@ -4,6 +4,8 @@ import DashboardLayout from './layouts/DashboardLayout'
 import Dashboard from './pages/Dashboard'
 import Employees from './pages/Employees'
 import AddEmployee from './pages/AddEmployee'
+import Departments from './pages/Departments'
+import AddDepartment from './pages/AddDepartment'
 import LeaveRequests from './pages/LeaveRequests'
 import LeaveBalance from './pages/LeaveBalance'
 import AddLeaveBalance from './pages/AddLeaveBalance'
@@ -52,6 +54,9 @@ const App = () => {
         <Route path="employees" element={<Employees />} />
         <Route path="add-employee" element={<AddEmployee />} />
         <Route path="edit-employee/:id" element={<AddEmployee />} />
+        <Route path="departments" element={<Departments />} />
+        <Route path="add-department" element={<AddDepartment />} />
+        <Route path="edit-department/:id" element={<AddDepartment />} />
         <Route path="leave-requests" element={<LeaveRequests />} />
         <Route path="leave-balance" element={<LeaveBalance />} />
         <Route path="add-leave" element={<AddLeaveBalance />} />

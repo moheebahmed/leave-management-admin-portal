@@ -10,6 +10,7 @@ import {
   Bell,
   Tag,
   X,
+  Building2,
 } from 'lucide-react'
 
 const NAV_GROUPS = [
@@ -22,6 +23,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/employees', label: 'Employees', icon: Users },
       { to: '/add-employee', label: 'Add Employees', icon: UserPlus },
+      { to: '/departments', label: 'Departments', icon: Building2 },
     ],
   },
   {
@@ -133,7 +135,7 @@ const Sidebar = ({ collapsed, onClose }) => {
           </div>
           <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-card/70 hover:text-slate-200 transition-all duration-150 overflow-hidden whitespace-nowrap">
             <Settings size={15} className="shrink-0" />
-            <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+            <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
               Settings
             </span>
           </button>

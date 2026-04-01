@@ -147,6 +147,10 @@
   .table-row-hover {
     @apply hover:bg-card-hover transition-colors duration-100;
   }
+
+  .absolute.z-50.mt-1.left-0.bg-\[\#1a1a1a\].border.border-border.rounded-lg.shadow-xl.overflow-hidden.min-w-\[140px\] {
+    left: -20px;
+  }
 }
 
 /* Login page — mobile only styles */
