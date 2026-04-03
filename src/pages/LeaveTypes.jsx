@@ -22,7 +22,7 @@ const LeaveTypes = () => {
   const fetchLeaveTypes = async () => {
     try {
       setLoading(true)
-      const res = await axios.get(`${API_BASE_URL}/employee/leave/types`, { headers: getAuthHeaders() })
+      const res = await axios.get(`${API_BASE_URL}/employees/leave/types`, { headers: getAuthHeaders() })
       setLeaveTypes(res.data.data.leave_types || [])
     } catch {
       showToast('Failed to fetch leave types')

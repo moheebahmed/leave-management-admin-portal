@@ -8,7 +8,7 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/employee/notifications`, { headers: getAuthHeaders() })
+    axios.get(`${API_BASE_URL}/employees/notifications`, { headers: getAuthHeaders() })
       .then(res => setNotifications(res.data.data.notifications || []))
       .catch(() => { })
       .finally(() => setLoading(false))
@@ -17,12 +17,12 @@ const Notifications = () => {
   const unreadCount = notifications.filter(n => !n.is_read).length
 
   const markAllRead = async () => {
-    await axios.put(`${API_BASE_URL}/employee/notifications/read-all`, {}, { headers: getAuthHeaders() })
+    await axios.put(`${API_BASE_URL}/employees/notifications/read-all`, {}, { headers: getAuthHeaders() })
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
   }
 
   const markRead = async (id) => {
-    await axios.put(`${API_BASE_URL}/employee/notifications/${id}/read`, {}, { headers: getAuthHeaders() })
+    await axios.put(`${API_BASE_URL}/employees/notifications/${id}/read`, {}, { headers: getAuthHeaders() })
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
   }
 

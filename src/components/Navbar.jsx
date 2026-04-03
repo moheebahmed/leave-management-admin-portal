@@ -34,7 +34,7 @@ const Navbar = ({ toggleSidebar }) => {
   useEffect(() => {
     if (showNotifications) {
       setNotificationsLoading(true)
-      axios.get(`${API_BASE_URL}/employee/notifications`, { headers: getAuthHeaders() })
+      axios.get(`${API_BASE_URL}/employees/notifications`, { headers: getAuthHeaders() })
         .then(res => setNotifications((res.data.data.notifications || []).slice(0, 5)))
         .catch(() => { })
         .finally(() => setNotificationsLoading(false))

@@ -29,7 +29,7 @@ const Dashboard = () => {
     try {
       const [requestsRes, typesRes] = await Promise.all([
         axios.get(`${API_BASE_URL}/hr/leave/requests`, { headers: getAuthHeaders() }),
-        axios.get(`${API_BASE_URL}/employee/leave/types`, { headers: getAuthHeaders() }),
+        axios.get(`${API_BASE_URL}/employees/leave/types`, { headers: getAuthHeaders() }),
       ])
 
       const allRequests = requestsRes.data.data.requests || []

@@ -40,7 +40,7 @@ const AddLeaveBalance = () => {
     })
       .catch(() => showToast('Failed to fetch employees'))
 
-    axios.get(`${API_BASE_URL}/employee/leave/types`, {
+    axios.get(`${API_BASE_URL}/employees/leave/types`, {
       headers: getAuthHeaders()
     }).then(res => {
       const types = res.data.data.leave_types

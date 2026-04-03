@@ -266,7 +266,7 @@ const LeaveRequests = () => {
   const handleFeedbackSave = async (id, { feedback, status }) => {
     try {
       await axios.put(
-        `${API_BASE_URL}/employee/leave/requests/${id}/update`,
+        `${API_BASE_URL}/employees/leave/requests/${id}/update`,
         { feedback },
         { headers: getAuthHeaders() }
       )
@@ -290,7 +290,7 @@ const LeaveRequests = () => {
     const newValue = !currentValue
     try {
       await axios.put(
-        `${API_BASE_URL}/employee/leave/requests/${id}/update`,
+        `${API_BASE_URL}/employees/leave/requests/${id}/update`,
         { isLeadApproval: newValue },
         { headers: getAuthHeaders() }
       )
