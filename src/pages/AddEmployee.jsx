@@ -89,14 +89,20 @@ const AddEmployee = () => {
 
     setLoading(true)
     try {
+      // Get department name from selected department_id
+      const selectedDept = departments.find(d => d.id === parseInt(form.department_id))
+      const payload = {
+        ...form,
+        department: selectedDept?.department_name || ''
+      }
+
       if (isEdit) {
-        const payload = { ...form }
         if (!payload.password) delete payload.password
         await axios.put(`${API_BASE_URL}/hr/employees/${id}`, payload, {
           headers: getAuthHeaders()
         })
       } else {
-        await axios.post(`${API_BASE_URL}/auth/register`, form, {
+        await axios.post(`${API_BASE_URL}/auth/register`, payload, {
           headers: getAuthHeaders()
         })
       }

@@ -12,10 +12,23 @@ const Employees = () => {
   const navigate = useNavigate()
   const { employees, setEmployees, showToast } = useApp()
   const [search, setSearch] = useState('')
+  const [departments, setDepartments] = useState([])
 
   useEffect(() => {
     fetchEmployees()
+    fetchDepartments()
   }, [])
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/departments`, {
+        headers: getAuthHeaders()
+      })
+      setDepartments(res.data.data || [])
+    } catch (error) {
+      console.log('Error fetching departments:', error)
+    }
+  }
 
   const fetchEmployees = async () => {
     try {
@@ -27,6 +40,12 @@ const Employees = () => {
       console.log('Error fetching employees:', error)
       showToast('Failed to fetch employees')
     }
+  }
+
+  const getDepartmentName = (deptId) => {
+    if (!deptId) return '—'
+    const dept = departments.find(d => d.id === deptId)
+    return dept?.department_name || '—'
   }
 
   const filtered = employees.filter((e) =>
@@ -121,7 +140,7 @@ const Employees = () => {
 
                   {/* Department */}
                   <td className="table-td whitespace-nowrap">
-                    <DeptBadge department={emp.department} />
+                    <DeptBadge department={emp.department || getDepartmentName(emp.department_id)} />
                   </td>
 
                   {/* Designation */}
