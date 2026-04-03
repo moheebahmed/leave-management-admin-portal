@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { UserPlus, Save, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useApp } from '../layouts/DashboardLayout'
-import { DEPARTMENTS } from '../data/initialData'
 import axios from 'axios'
 import { API_BASE_URL, getAuthHeaders } from '../api/config'
 
@@ -27,6 +26,22 @@ const AddEmployee = () => {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [departments, setDepartments] = useState([])
+  const [departmentsLoading, setDepartmentsLoading] = useState(true)
+
+  useEffect(() => {
+    // Fetch departments from API
+    axios.get(`${API_BASE_URL}/departments`, { headers: getAuthHeaders() })
+      .then(res => {
+        const deptList = res.data.data || []
+        setDepartments(deptList)
+      })
+      .catch(() => {
+        showToast('Failed to fetch departments')
+        setDepartments([])
+      })
+      .finally(() => setDepartmentsLoading(false))
+  }, [])
 
   useEffect(() => {
     if (isEdit) {
@@ -222,10 +237,11 @@ const AddEmployee = () => {
                   className={`${inputClass('department')} cursor-pointer`}
                   value={form.department}
                   onChange={(e) => set('department', e.target.value)}
+                  disabled={departmentsLoading}
                 >
-                  <option value="">Select department</option>
-                  {DEPARTMENTS.map((d) => (
-                    <option key={d} value={d} className="bg-card">{d}</option>
+                  <option value="">{departmentsLoading ? 'Loading...' : 'Select department'}</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.department_name} className="bg-card">{d.department_name}</option>
                   ))}
                 </select>
                 {errors.department && <p className="text-xs text-danger">{errors.department}</p>}
