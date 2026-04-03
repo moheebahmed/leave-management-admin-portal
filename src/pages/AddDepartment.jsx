@@ -31,10 +31,10 @@ const AddDepartment = () => {
     const fetchEmployees = async () => {
       try {
         setState(prev => ({ ...prev, loadingEmployees: true }))
-        const res = await axios.get(`${API_BASE_URL}/employees`, {
+        const res = await axios.get(`${API_BASE_URL}/hr/employees`, {
           headers: getAuthHeaders()
         })
-        setState(prev => ({ ...prev, employees: res.data.data || [], loadingEmployees: false }))
+        setState(prev => ({ ...prev, employees: res.data.data.employees || [], loadingEmployees: false }))
       } catch (error) {
         console.log('Error fetching employees:', error)
         setState(prev => ({ ...prev, loadingEmployees: false }))
