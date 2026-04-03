@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Pencil, Trash2, Copy, Search, ChevronDown, X, Save } from 'lucide-react'
+import { Pencil, Trash2, Copy, Search, ChevronDown, X, Save, Plus } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import axios from 'axios'
@@ -333,6 +333,13 @@ const LeaveRequests = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            className="btn-primary self-start sm:self-auto"
+            onClick={() => navigate('/create-leave-request')}
+          >
+            <Plus size={14} />
+            Create Request
+          </button>
           {selectedRows.length > 0 && (
             <button
               className="btn-ghost hover:!bg-danger/10 hover:!text-danger"
