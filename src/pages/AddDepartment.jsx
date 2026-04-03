@@ -149,7 +149,9 @@ const AddDepartment = () => {
                   disabled={state.loadingEmployees}
                 >
                   <option value="">Select lead (optional)</option>
-                  {state.employees.map((emp) => (
+                  {state.employees
+                    .filter((emp) => emp.designation && emp.designation.toLowerCase().includes('lead'))
+                    .map((emp) => (
                     <option key={emp.id} value={emp.id} className="bg-card">
                       {emp.full_name} ({emp.employee_code})
                     </option>

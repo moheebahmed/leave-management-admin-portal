@@ -10,7 +10,7 @@ const INITIAL_FORM = {
   email: '',
   password: '',
   role: 'EMPLOYEE',
-  department: '',
+  department_id: '',
   designation: '',
   joining_date: '',
   confirmation_date: '',
@@ -53,7 +53,7 @@ const AddEmployee = () => {
             email: emp.User?.email || '',
             password: '',
             role: emp.User?.role || 'EMPLOYEE',
-            department: emp.department || '',
+            department_id: emp.department_id || '',
             designation: emp.designation || '',
             joining_date: emp.joining_date ? emp.joining_date.split('T')[0] : '',
             confirmation_date: emp.confirmation_date ? emp.confirmation_date.split('T')[0] : '',
@@ -74,7 +74,7 @@ const AddEmployee = () => {
     if (!form.full_name.trim()) e.full_name = 'Full name is required'
     if (!form.email.trim() || !form.email.includes('@')) e.email = 'A valid email is required'
     if (!isEdit && (!form.password.trim() || form.password.length < 6)) e.password = 'Password must be at least 6 characters'
-    if (!form.department) e.department = 'Please select a department'
+    if (!form.department_id) e.department_id = 'Please select a department'
     if (!form.designation.trim()) e.designation = 'Designation is required'
     if (!form.joining_date) e.joining_date = 'Joining date is required'
     if (!form.confirmation_date) e.confirmation_date = 'Confirmation date is required'
@@ -234,17 +234,17 @@ const AddEmployee = () => {
                   Department <span className="text-danger">*</span>
                 </label>
                 <select
-                  className={`${inputClass('department')} cursor-pointer`}
-                  value={form.department}
-                  onChange={(e) => set('department', e.target.value)}
+                  className={`${inputClass('department_id')} cursor-pointer`}
+                  value={form.department_id}
+                  onChange={(e) => set('department_id', e.target.value)}
                   disabled={departmentsLoading}
                 >
                   <option value="">{departmentsLoading ? 'Loading...' : 'Select department'}</option>
                   {departments.map((d) => (
-                    <option key={d.id} value={d.department_name} className="bg-card">{d.department_name}</option>
+                    <option key={d.id} value={d.id} className="bg-card">{d.department_name}</option>
                   ))}
                 </select>
-                {errors.department && <p className="text-xs text-danger">{errors.department}</p>}
+                {errors.department_id && <p className="text-xs text-danger">{errors.department_id}</p>}
               </div>
 
               {/* Designation */}
