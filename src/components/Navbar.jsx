@@ -160,11 +160,18 @@ const Navbar = ({ toggleSidebar }) => {
           <Menu size={15} />
         </button>
 
-        {/* Page title */}
+        {/* Logo + Page title */}
         {!showMobileSearch && (
-          <h1 className="font-syne font-semibold text-[13px] sm:text-[14px] text-slate-100 flex-1 truncate min-w-0">
-            {title}
-          </h1>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="font-syne font-bold text-accent text-sm sm:text-base shrink-0">#</span>
+            <h1 className="font-syne font-semibold text-[13px] sm:text-[14px] text-slate-100 truncate min-w-0">
+              LeaveOS
+            </h1>
+            <span className="hidden sm:inline text-slate-500 text-xs">•</span>
+            <span className="hidden sm:inline font-syne font-semibold text-[12px] text-slate-400 truncate min-w-0">
+              {title}
+            </span>
+          </div>
         )}
 
         {/* Mobile search expanded */}

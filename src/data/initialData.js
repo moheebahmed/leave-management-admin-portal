@@ -38,7 +38,7 @@ export const INITIAL_EMPLOYEES = [
   },
   {
     id: 'E002',
-    name: 'ali Ahmed',
+    name: 'ali Nawaz',
     email: 'ali@company.com',
     phone: '+92 301 2345678',
     department: 'Design',
