@@ -110,6 +110,7 @@ const Employees = () => {
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Employee</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Department</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Designation</th>
+                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Shift</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Joining Date</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Confirmation</th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">Role</th>
@@ -145,6 +146,14 @@ const Employees = () => {
 
                   {/* Designation */}
                   <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">{emp.designation}</td>
+
+                  {/* Shift */}
+                  <td className="table-td whitespace-nowrap">
+                    {emp.shift?.title
+                      ? <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">{emp.shift.title}</span>
+                      : <span className="text-slate-600 text-xs">—</span>
+                    }
+                  </td>
 
                   {/* Joining Date */}
                   <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">

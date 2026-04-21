@@ -11,28 +11,51 @@ import {
   Tag,
   X,
   Building2,
+  Upload,
+  CalendarCheck,
+  Banknote,
+  Clock,
+  CalendarDays,
+  TableProperties,
 } from 'lucide-react'
 
 const NAV_GROUPS = [
   {
-    label: 'Main',
+    label: 'ADMIN',
     items: [{ to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true }],
   },
   {
-    label: 'People',
+    label: 'Employees',
     items: [
-      { to: '/employees', label: 'Employees', icon: Users },
-      { to: '/add-employee', label: 'Add Employees', icon: UserPlus },
-      { to: '/departments', label: 'Departments', icon: Building2 },
+      { to: '/employees',    label: 'Employees',    icon: Users     },
+      { to: '/add-employee', label: 'Add Employees',icon: UserPlus  },
+      { to: '/departments',  label: 'Departments',  icon: Building2 },
     ],
   },
   {
     label: 'Leaves',
     items: [
-      { to: '/leave-requests', label: 'Leave Requests', icon: ClipboardList },
-      { to: '/leave-balance', label: 'Leave Balance', icon: ClipboardList },
-      { to: '/add-leave', label: 'Add Leave Balance', icon: PlusCircle },
-      { to: '/leave-types', label: 'Leave Types', icon: Tag },
+      { to: '/leave-requests', label: 'Leave Requests',   icon: ClipboardList },
+      { to: '/leave-balance',  label: 'Leave Balance',    icon: ClipboardList },
+      { to: '/add-leave',      label: 'Add Leave Balance',icon: PlusCircle    },
+      { to: '/leave-types',    label: 'Leave Types',      icon: Tag           },
+    ],
+  },
+  {
+    label: 'Attendance',
+    items: [
+      { to: '/attendance-upload',   label: 'Upload Attendance',   icon: Upload          },
+      { to: '/attendance-records',  label: 'Attendance Records',  icon: CalendarCheck   },
+      { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
+      // { to: '/roster',              label: 'Roster',              icon: LayoutDashboard },
+      { to: '/shifts',              label: 'Shifts',              icon: Clock           },
+      { to: '/holidays',            label: 'Holidays',            icon: CalendarDays    },
+    ],
+  },
+  {
+    label: 'Payroll',
+    items: [
+      { to: '/payroll', label: 'Payroll', icon: Banknote },
     ],
   },
   {

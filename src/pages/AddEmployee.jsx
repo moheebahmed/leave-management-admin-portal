@@ -11,11 +11,12 @@ const INITIAL_FORM = {
   password: '',
   role: 'EMPLOYEE',
   department_id: '',
+  shift_id: '',
   designation: '',
   joining_date: '',
   confirmation_date: '',
   employee_code: '',
-}
+} 
 
 const AddEmployee = () => {
   const navigate = useNavigate()
@@ -28,19 +29,21 @@ const AddEmployee = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [departments, setDepartments] = useState([])
   const [departmentsLoading, setDepartmentsLoading] = useState(true)
+  const [shifts, setShifts] = useState([])
+  const [shiftsLoading, setShiftsLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch departments from API
+    // Fetch departments
     axios.get(`${API_BASE_URL}/departments`, { headers: getAuthHeaders() })
-      .then(res => {
-        const deptList = res.data.data || []
-        setDepartments(deptList)
-      })
-      .catch(() => {
-        showToast('Failed to fetch departments')
-        setDepartments([])
-      })
+      .then(res => setDepartments(res.data.data || []))
+      .catch(() => showToast('Failed to fetch departments'))
       .finally(() => setDepartmentsLoading(false))
+
+    // Fetch shifts
+    axios.get(`${API_BASE_URL}/shifts`, { headers: getAuthHeaders() })
+      .then(res => setShifts(res.data?.data || res.data || []))
+      .catch(() => showToast('Failed to fetch shifts'))
+      .finally(() => setShiftsLoading(false))
   }, [])
 
   useEffect(() => {
@@ -54,6 +57,7 @@ const AddEmployee = () => {
             password: '',
             role: emp.User?.role || 'EMPLOYEE',
             department_id: emp.department_id || '',
+            shift_id: emp.shift_id || '',
             designation: emp.designation || '',
             joining_date: emp.joining_date ? emp.joining_date.split('T')[0] : '',
             confirmation_date: emp.confirmation_date ? emp.confirmation_date.split('T')[0] : '',
@@ -265,6 +269,24 @@ const AddEmployee = () => {
                   onChange={(e) => set('designation', e.target.value)}
                 />
                 {errors.designation && <p className="text-xs text-danger">{errors.designation}</p>}
+              </div>
+
+              {/* Shift */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
+                  Shift
+                </label>
+                <select
+                  className={`${inputClass('shift_id')} cursor-pointer`}
+                  value={form.shift_id}
+                  onChange={(e) => set('shift_id', e.target.value)}
+                  disabled={shiftsLoading}
+                >
+                  <option value="">{shiftsLoading ? 'Loading...' : 'Select shift'}</option>
+                  {shifts.map((s) => (
+                    <option key={s.id} value={s.id} className="bg-card">{s.title}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Joining Date */}

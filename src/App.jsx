@@ -14,6 +14,13 @@ import Login from './pages/Login'
 import Notifications from './pages/Notifications'
 import CreateLeaveRequest from './pages/CreateLeaveRequest'
 import ProtectedRoute from './components/ProtectedRoute'
+import AttendanceUpload from './pages/AttendanceUpload'
+import AttendanceRecords from './pages/AttendanceRecords'
+import AttendanceRegister from './pages/AttendanceRegister'
+import Payroll from './pages/Payroll'
+import Shifts from './pages/Shifts'
+import Holidays from './pages/Holidays'
+// import Roster from './pages/Roster'
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -65,6 +72,13 @@ const App = () => {
         <Route path="edit-leave/:empId" element={<AddLeaveBalance />} />
         <Route path="leave-types" element={<LeaveTypes />} />
         <Route path="notifications" element={<Notifications />} />
+        <Route path="attendance-upload" element={<AttendanceUpload />} />
+        <Route path="attendance-records" element={<AttendanceRecords />} />
+        <Route path="attendance-register" element={<AttendanceRegister />} />
+        <Route path="shifts" element={<Shifts />} />
+        <Route path="holidays" element={<Holidays />} />
+        {/* <Route path="roster" element={<Roster />} /> */}
+        <Route path="payroll" element={<Payroll />} />
       </Route>
 
       {/* Catch all - redirect to login */}
