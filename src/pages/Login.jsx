@@ -64,8 +64,12 @@ const Login = () => {
 
         <div className="relative z-10 text-center">
           <div className="inline-flex items-center gap-4 mb-8">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center font-syne font-black text-3xl text-white shadow-[0_0_40px_rgba(224,77,51,0.4)]">
-              LO
+            <div className="w-20 h-18 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+              <img
+                src="/logo.png"
+                alt="logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="text-left">
               <div className="font-syne font-bold text-4xl text-white leading-tight">
@@ -106,9 +110,20 @@ const Login = () => {
 
           {/* Welcome Text */}
           <div className="login-welcome mb-8">
-            <h1 className="font-syne text-4xl font-bold text-white mb-3">
-              Welcome
-            </h1>
+            {/* Logo with Welcome */}
+            <div className="flex items-center gap-3 mb-3">
+              {/* <div className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="logo"
+                  className="w-full h-full object-contain"
+                />
+              </div> */}
+              <h1 className="font-syne text-4xl font-bold text-white">
+                Welcome
+              </h1>
+            </div>
+
             <p className="text-slate-300 text-sm uppercase tracking-wider">
               Please login to Admin Dashboard
             </p>

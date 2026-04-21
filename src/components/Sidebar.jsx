@@ -27,29 +27,29 @@ const NAV_GROUPS = [
   {
     label: 'Employees',
     items: [
-      { to: '/employees',    label: 'Employees',    icon: Users     },
-      { to: '/add-employee', label: 'Add Employees',icon: UserPlus  },
-      { to: '/departments',  label: 'Departments',  icon: Building2 },
+      { to: '/employees', label: 'Employees', icon: Users },
+      { to: '/add-employee', label: 'Add Employees', icon: UserPlus },
+      { to: '/departments', label: 'Departments', icon: Building2 },
     ],
   },
   {
     label: 'Leaves',
     items: [
-      { to: '/leave-requests', label: 'Leave Requests',   icon: ClipboardList },
-      { to: '/leave-balance',  label: 'Leave Balance',    icon: ClipboardList },
-      { to: '/add-leave',      label: 'Add Leave Balance',icon: PlusCircle    },
-      { to: '/leave-types',    label: 'Leave Types',      icon: Tag           },
+      { to: '/leave-requests', label: 'Leave Requests', icon: ClipboardList },
+      { to: '/leave-balance', label: 'Leave Balance', icon: ClipboardList },
+      { to: '/add-leave', label: 'Add Leave Balance', icon: PlusCircle },
+      { to: '/leave-types', label: 'Leave Types', icon: Tag },
     ],
   },
   {
     label: 'Attendance',
     items: [
-      { to: '/attendance-upload',   label: 'Upload Attendance',   icon: Upload          },
-      { to: '/attendance-records',  label: 'Attendance Records',  icon: CalendarCheck   },
+      { to: '/attendance-upload', label: 'Upload Attendance', icon: Upload },
+      { to: '/attendance-records', label: 'Attendance Records', icon: CalendarCheck },
       { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
       // { to: '/roster',              label: 'Roster',              icon: LayoutDashboard },
-      { to: '/shifts',              label: 'Shifts',              icon: Clock           },
-      { to: '/holidays',            label: 'Holidays',            icon: CalendarDays    },
+      { to: '/shifts', label: 'Shifts', icon: Clock },
+      { to: '/holidays', label: 'Holidays', icon: CalendarDays },
     ],
   },
   {
@@ -84,8 +84,13 @@ const Sidebar = ({ collapsed, onClose }) => {
     >
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border overflow-hidden">
-        <div className="w-8 h-8 min-w-[32px] rounded-lg bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center font-syne font-black text-xs text-white shadow-[0_0_20px_rgba(224,77,51,0.22)]">
-          LO
+        
+        <div className="w-10 h-10">
+          <img
+            src="/logo.png"
+          // alt="logo"
+          // className="w-full h-full  "
+          />
         </div>
         <div className={`transition-opacity duration-200 flex-1 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="font-syne font-bold text-sm text-slate-100 whitespace-nowrap leading-tight">
@@ -111,9 +116,8 @@ const Sidebar = ({ collapsed, onClose }) => {
         {NAV_GROUPS.map((group) => (
           <div key={group.label}>
             <div
-              className={`text-[9px] font-semibold uppercase tracking-widest text-slate-600 px-2 pb-1.5 transition-opacity duration-200 ${
-                collapsed ? 'opacity-0' : 'opacity-100'
-              }`}
+              className={`text-[9px] font-semibold uppercase tracking-widest text-slate-600 px-2 pb-1.5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'
+                }`}
             >
               {group.label}
             </div>
@@ -126,18 +130,16 @@ const Sidebar = ({ collapsed, onClose }) => {
                   onClick={onClose}
                   className={({ isActive }) =>
                     `relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 overflow-hidden whitespace-nowrap
-                    ${
-                      isActive
-                        ? 'bg-accent/10 text-accent border border-accent/20 nav-active-bar'
-                        : 'text-slate-500 hover:bg-card/70 hover:text-slate-200'
+                    ${isActive
+                      ? 'bg-accent/10 text-accent border border-accent/20 nav-active-bar'
+                      : 'text-slate-500 hover:bg-card/70 hover:text-slate-200'
                     }`
                   }
                 >
                   <Icon size={15} className="shrink-0" />
                   <span
-                    className={`transition-opacity duration-200 ${
-                      collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
-                    }`}
+                    className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                      }`}
                   >
                     {label}
                   </span>
@@ -150,9 +152,8 @@ const Sidebar = ({ collapsed, onClose }) => {
         {/* System */}
         <div>
           <div
-            className={`text-[9px] font-semibold uppercase tracking-widest text-slate-600 px-2 pb-1.5 transition-opacity duration-200 ${
-              collapsed ? 'opacity-0' : 'opacity-100'
-            }`}
+            className={`text-[9px] font-semibold uppercase tracking-widest text-slate-600 px-2 pb-1.5 transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'
+              }`}
           >
             System
           </div>
@@ -162,7 +163,7 @@ const Sidebar = ({ collapsed, onClose }) => {
               Settings
             </span>
           </button>
-          <button 
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-card/70 hover:text-danger transition-all duration-150 overflow-hidden whitespace-nowrap"
           >
@@ -177,8 +178,12 @@ const Sidebar = ({ collapsed, onClose }) => {
       {/* User Footer */}
       <div className="p-2 border-t border-border">
         <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg overflow-hidden">
-          <div className="w-7 h-7 min-w-[28px] rounded-full bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
-            AD
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="logo"
+              className="w-full h-full object-contain"
+            />
           </div>
           <div className={`transition-opacity duration-200 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
             <div className="text-xs font-semibold text-slate-200 whitespace-nowrap">Admin HR</div>
