@@ -337,7 +337,7 @@ const AttendanceRecords = () => {
                               <table className="w-full min-w-[900px]">
                                 <thead>
                                   <tr className="bg-surface/50">
-                                    {['Date','Timetable','On Duty','Off Duty','Check In','Check Out','Late-minutes','Early-minutes','Status','OT Time','Work Time'].map(h => (
+                                    {['Date','Timetable','On Duty','Off Duty','Check In','Check Out','Late minutes','Early minutes','Status','OT Time','Work hour'].map(h => (
                                       <th key={h} className="table-th text-[11px] text-slate-500 whitespace-nowrap">{h}</th>
                                     ))}
                                   </tr>
