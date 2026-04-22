@@ -1,19 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Filter, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { TableWrapper, EmptyState } from '../components/Table'
 import Avatar from '../components/Avatar'
-
-const DUMMY_RECORDS = [
-  { id: 1,  emp_no: '55', ac_no: '48', name: 'Asad',  department: 'Engineering', date: '2026-03-05', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '20:58', clock_out: '03:00', normal: 1, real_time: 0.5, late: '02:58', early: '01:05', absent: 0, ot_time: '05:01', work_time: '06:13' },
-  { id: 2,  emp_no: '55', ac_no: '48', name: 'Asad',  department: 'Engineering', date: '2026-03-11', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '20:45', clock_out: '02:59', normal: 1, real_time: 0.5, late: '02:45', early: null,   absent: 0, ot_time: null,   work_time: '06:13' },
-  { id: 3,  emp_no: '55', ac_no: '48', name: 'Asad',  department: 'Engineering', date: '2026-03-12', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '20:05', clock_out: '03:00', normal: 1, real_time: 0.5, late: '02:05', early: null,   absent: 0, ot_time: null,   work_time: '06:54' },
-  { id: 4,  emp_no: '55', ac_no: '48', name: 'Asad',  department: 'Engineering', date: '2026-03-13', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '20:23', clock_out: '02:56', normal: 1, real_time: 0.5, late: '02:23', early: null,   absent: 0, ot_time: null,   work_time: '06:36' },
-  { id: 5,  emp_no: '55', ac_no: '48', name: 'Asad',  department: 'Engineering', date: '2026-03-14', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '20:29', clock_out: '02:56', normal: 1, real_time: 0.5, late: '02:29', early: null,   absent: 0, ot_time: null,   work_time: '06:27' },
-  { id: 6,  emp_no: '48', ac_no: '32', name: 'Abdullah',  department: 'HR',          date: '2026-03-15', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '16:16', clock_out: null,   normal: 1, real_time: 1,   late: null,   early: '01:00', absent: 0, ot_time: null,   work_time: '08:00' },
-  { id: 7,  emp_no: '48', ac_no: '32', name: 'Abdullah',  department: 'HR',          date: '2026-03-20', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '16:44', clock_out: null,   normal: 1, real_time: 1,   late: null,   early: '01:00', absent: 0, ot_time: null,   work_time: '08:00' },
-  { id: 8,  emp_no: '32', ac_no: '21', name: 'Ayyan', department: 'Finance',     date: '2026-02-21', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '21:43', clock_out: '03:00', normal: 1, real_time: 0.5, late: '03:43', early: '01:06', absent: 0, ot_time: null,   work_time: '04:16' },
-  { id: 9,  emp_no: '32', ac_no: '21', name: 'Ayyan', department: 'Finance',     date: '2026-02-27', timetable: 'Full Day', on_duty: '19:00', off_duty: '03:00', clock_in: '16:33', clock_out: '01:10', normal: 1, real_time: 1,   late: null,   early: null,   absent: 0, ot_time: null,   work_time: '07:10' },
-]
+import axios from 'axios'
+import { API_BASE_URL, getAuthHeaders } from '../api/config'
+import { useApp } from '../layouts/DashboardLayout'
 
 const MONTHS = [
   { value: '',        label: 'All Months'    },
@@ -25,14 +16,115 @@ const MONTHS = [
 
 const DEPARTMENTS = ['All Departments', 'Engineering', 'HR', 'Finance', 'Design', 'Marketing']
 
+// Extract HH:MM from "HH:MM:SS" or "2026-01-01T18:00:00.000Z" or "2026-01-01 18:00:00"
+const extractTime = (val) => {
+  if (!val) return null
+  const s = String(val)
+  const isoMatch = s.match(/T(\d{2}:\d{2})/) || s.match(/\d{4}-\d{2}-\d{2}[T ](\d{2}:\d{2})/)
+  if (isoMatch) return isoMatch[1]
+  const timeMatch = s.match(/^(\d{2}:\d{2})/)
+  if (timeMatch) return timeMatch[1]
+  return s.slice(0, 5)
+}
+
+// Calculate attendance status
+const getStatus = (row) => {
+  const hasWork = row.work_time && parseFloat(row.work_time) > 0
+  if (!row.clock_in && !hasWork) return 'Absent'
+  if (row.late && parseFloat(row.late) > 0) return 'Late'
+  return 'Present'
+}
+
+const mapEmpAttendance = (emp, rows) =>
+  rows.map((r, i) => {
+    const lateVal  = r.late_minutes    ?? r.late     ?? null
+    const earlyVal = r.early_minutes   ?? r.early    ?? null
+    const otVal    = r.overtime_minutes ?? r.ot_time ?? null
+    const workVal  = r.work_hours      ?? r.work_time ?? null
+    const clockIn  = extractTime(r.check_in  || r.clock_in)
+    const clockOut = extractTime(r.check_out || r.clock_out)
+
+    return {
+      id:         r.id || `${emp.id}-${i}`,
+      emp_no:     String(emp.employee_code || emp.id),
+      ac_no:      String(emp.employee_code || emp.id),
+      name:       emp.full_name || '—',
+      department: emp.department || '—',
+      date:       r.date || '',
+      timetable:  r.timetable || 'Full Day',
+      on_duty:    extractTime(r.on_duty),
+      off_duty:   extractTime(r.off_duty),
+      clock_in:   clockIn,
+      clock_out:  clockOut,
+      normal:     r.normal    ?? 1,
+      real_time:  r.real_time ?? null,
+      late:       lateVal  != null && lateVal  !== 0 ? String(lateVal)  : null,
+      early:      earlyVal != null && earlyVal !== 0 ? String(earlyVal) : null,
+      absent:     r.absent ?? 0,
+      ot_time:    otVal   != null && otVal   !== 0 ? String(otVal)   : null,
+      work_time:  workVal != null && workVal !== 0 ? String(workVal) : null,
+    }
+  })
+
 const AttendanceRecords = () => {
-  const [search, setSearch]       = useState('')
-  const [records]                 = useState(DUMMY_RECORDS)
-  const [selectedMonth, setMonth] = useState('')
-  const [selectedDept,  setDept]  = useState('All Departments')
-  const [dateFrom, setDateFrom]   = useState('')
-  const [dateTo,   setDateTo]     = useState('')
-  const [expanded, setExpanded]   = useState({})
+  const { showToast } = useApp()
+  const [search, setSearch]               = useState('')
+  const [empList, setEmpList]             = useState([])        //   only employees list
+  const [attendanceByEmp, setAttendanceByEmp] = useState({})   //   lazy-loaded emp
+  const [empLoadingMap, setEmpLoadingMap] = useState({})        //  per-row loading state
+  const [loading, setLoading]             = useState(false)
+  const [selectedMonth, setMonth]         = useState('')
+  const [selectedDept,  setDept]          = useState('All Departments')
+  const [dateFrom, setDateFrom]           = useState('')
+  const [dateTo,   setDateTo]             = useState('')
+  const [expanded, setExpanded]           = useState({})
+
+  //  STEP 1: only employees fetch  
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      setLoading(true)
+      try {
+        const empRes = await axios.get(`${API_BASE_URL}/hr/employees`, { headers: getAuthHeaders() })
+        setEmpList(empRes.data?.data?.employees || [])
+      } catch (err) {
+        console.error('Fetch employees error:', err)
+        showToast?.('Failed to load employees')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchEmployees()
+  }, [])
+
+  // 
+  const toggleExpand = async (emp) => {
+    const emp_no = String(emp.employee_code || emp.id)
+    const isOpen = expanded[emp_no]
+
+    // Agar close kar raha hai toh bas toggle karo
+    setExpanded(prev => ({ ...prev, [emp_no]: !isOpen }))
+
+    // 
+    if (isOpen || attendanceByEmp[emp.id] !== undefined) return
+
+    // new data fetch 
+    setEmpLoadingMap(prev => ({ ...prev, [emp.id]: true }))
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/attendance/employee/${emp.id}`,
+        { headers: getAuthHeaders() }
+      )
+      const raw = res.data?.data?.attendance || res.data?.data || res.data || []
+      const rows = Array.isArray(raw) ? raw : []
+      setAttendanceByEmp(prev => ({ ...prev, [emp.id]: mapEmpAttendance(emp, rows) }))
+    } catch (err) {
+      console.error(`Attendance fetch failed for emp ${emp.id}:`, err)
+      showToast?.('Failed to load attendance for this employee')
+      setAttendanceByEmp(prev => ({ ...prev, [emp.id]: [] }))
+    } finally {
+      setEmpLoadingMap(prev => ({ ...prev, [emp.id]: false }))
+    }
+  }
 
   const activeFilters = [selectedMonth, selectedDept !== 'All Departments', dateFrom, dateTo].filter(Boolean).length
 
@@ -41,25 +133,26 @@ const AttendanceRecords = () => {
     setDateFrom(''); setDateTo(''); setSearch('')
   }
 
-  const filtered = records.filter((r) => {
-    const matchSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.emp_no.includes(search) || r.date.includes(search)
-    const matchMonth  = selectedMonth ? r.date.startsWith(selectedMonth) : true
-    const matchDept   = selectedDept !== 'All Departments' ? r.department === selectedDept : true
-    const matchFrom   = dateFrom ? r.date >= dateFrom : true
-    const matchTo     = dateTo   ? r.date <= dateTo   : true
-    return matchSearch && matchMonth && matchDept && matchFrom && matchTo
+  // Filter employees by search / dept
+  const filteredEmps = empList.filter((emp) => {
+    const emp_no = String(emp.employee_code || emp.id)
+    const name   = (emp.full_name || '').toLowerCase()
+    const dept   = emp.department || ''
+    const matchSearch = name.includes(search.toLowerCase()) || emp_no.includes(search)
+    const matchDept   = selectedDept !== 'All Departments' ? dept === selectedDept : true
+    return matchSearch && matchDept
   })
 
-  // Group by employee
-  const grouped = filtered.reduce((acc, r) => {
-    const key = r.emp_no
-    if (!acc[key]) acc[key] = { emp_no: r.emp_no, ac_no: r.ac_no, name: r.name, department: r.department, records: [] }
-    acc[key].records.push(r)
-    return acc
-  }, {})
-  const groupedList = Object.values(grouped)
-
-  const toggleExpand = (emp_no) => setExpanded(prev => ({ ...prev, [emp_no]: !prev[emp_no] }))
+  // For the subtitle count — count records that are loaded & pass date filters
+  const totalRecords = filteredEmps.reduce((acc, emp) => {
+    const rows = (attendanceByEmp[emp.id] || []).filter((r) => {
+      const matchMonth = selectedMonth ? r.date.startsWith(selectedMonth) : true
+      const matchFrom  = dateFrom ? r.date >= dateFrom : true
+      const matchTo    = dateTo   ? r.date <= dateTo   : true
+      return matchMonth && matchFrom && matchTo
+    })
+    return acc + rows.length
+  }, 0)
 
   return (
     <div className="animate-fade-slide space-y-5">
@@ -71,7 +164,7 @@ const AttendanceRecords = () => {
           <span className="text-white font-bold">Records</span>
         </h2>
         <p className="page-subtitle font-semibold text-[rgb(173,173,173)]">
-          {groupedList.length} employees · {filtered.length} records
+          {filteredEmps.length} employees · {totalRecords} records loaded
         </p>
       </div>
 
@@ -147,8 +240,16 @@ const AttendanceRecords = () => {
 
       {/* Table */}
       <TableWrapper title="All Attendance Records">
-        {groupedList.length === 0 ? (
-          <EmptyState message="No records match your filters." />
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-slate-500 text-sm gap-2">
+            <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+            Loading employees…
+          </div>
+        ) : filteredEmps.length === 0 ? (
+          <EmptyState message="No employees match your filters." />
         ) : (
           <table className="w-full">
             <thead>
@@ -161,87 +262,127 @@ const AttendanceRecords = () => {
               </tr>
             </thead>
             <tbody>
-              {groupedList.map((group, i) => (
-                <>
-                  {/* Employee Row */}
-                  <tr
-                    key={group.emp_no}
-                    className="table-row-hover cursor-pointer"
-                    onClick={() => toggleExpand(group.emp_no)}
-                  >
-                    <td className="table-td w-8">
-                      {expanded[group.emp_no]
-                        ? <ChevronDown size={14} className="text-accent" />
-                        : <ChevronRight size={14} className="text-slate-500" />}
-                    </td>
-                    <td className="table-td">
-                      <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border whitespace-nowrap">
-                        {group.emp_no}
-                      </span>
-                    </td>
-                    <td className="table-td">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar name={group.name} index={i} size="sm" />
-                        <span className="font-medium text-slate-200 text-[13px] whitespace-nowrap">{group.name}</span>
-                      </div>
-                    </td>
-                    <td className="table-td text-slate-400 text-xs whitespace-nowrap">{group.department}</td>
-                    <td className="table-td">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
-                        {group.records.length} records
-                      </span>
-                    </td>
-                  </tr>
+              {filteredEmps.map((emp, i) => {
+                const emp_no   = String(emp.employee_code || emp.id)
+                const isOpen   = !!expanded[emp_no]
+                const isLoading = !!empLoadingMap[emp.id]
 
-                  {/* Expanded Records */}
-                  {expanded[group.emp_no] && (
-                    <tr key={`${group.emp_no}-exp`}>
-                      <td colSpan={5} className="px-4 pb-3 pt-0">
-                        <div className="ml-8 rounded-lg border border-border overflow-x-auto">
-                          <table className="w-full min-w-[900px]">
-                            <thead>
-                              <tr className="bg-surface/50">
-                                {['Date','Timetable','On Duty','Off Duty','Check In','Check Out','Normal','Real Time','Late','Early','Absent','OT Time','Work Time'].map(h => (
-                                  <th key={h} className="table-th text-[11px] text-slate-500 whitespace-nowrap">{h}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {group.records.map((row) => (
-                                <tr key={row.id} className="border-t border-border/50 hover:bg-card-hover transition-colors">
-                                  <td className="table-td text-slate-400 text-xs whitespace-nowrap">{row.date}</td>
-                                  <td className="table-td">
-                                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">{row.timetable}</span>
-                                  </td>
-                                  <td className="table-td text-slate-400 text-xs font-mono whitespace-nowrap">{row.on_duty}</td>
-                                  <td className="table-td text-slate-400 text-xs font-mono whitespace-nowrap">{row.off_duty}</td>
-                                  <td className="table-td text-slate-300 text-xs font-mono whitespace-nowrap">{row.clock_in || '—'}</td>
-                                  <td className="table-td text-slate-300 text-xs font-mono whitespace-nowrap">{row.clock_out || '—'}</td>
-                                  <td className="table-td text-slate-400 text-xs text-center whitespace-nowrap">{row.normal}</td>
-                                  <td className="table-td text-slate-400 text-xs text-center whitespace-nowrap">{row.real_time}</td>
-                                  <td className="table-td text-xs font-mono whitespace-nowrap">
-                                    {row.late ? <span className="text-red-400 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">{row.late}</span> : <span className="text-slate-600">—</span>}
-                                  </td>
-                                  <td className="table-td text-xs font-mono whitespace-nowrap">
-                                    {row.early ? <span className="text-green-400 font-semibold bg-green-500/10 px-1.5 py-0.5 rounded">{row.early}</span> : <span className="text-slate-600">—</span>}
-                                  </td>
-                                  <td className="table-td text-xs text-center whitespace-nowrap">
-                                    {row.absent > 0 ? <span className="text-red-400 font-bold">{row.absent}</span> : <span className="text-slate-600">0</span>}
-                                  </td>
-                                  <td className="table-td text-xs font-mono whitespace-nowrap">
-                                    {row.ot_time ? <span className="text-blue-400 font-semibold">{row.ot_time}</span> : <span className="text-slate-600">—</span>}
-                                  </td>
-                                  <td className="table-td text-xs font-mono text-slate-300 font-semibold whitespace-nowrap">{row.work_time || '—'}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                // Filter loaded records by date filters
+                const empRecords = (attendanceByEmp[emp.id] || []).filter((r) => {
+                  const matchMonth = selectedMonth ? r.date.startsWith(selectedMonth) : true
+                  const matchFrom  = dateFrom ? r.date >= dateFrom : true
+                  const matchTo    = dateTo   ? r.date <= dateTo   : true
+                  return matchMonth && matchFrom && matchTo
+                })
+
+                return (
+                  <>
+                    {/* Employee Row */}
+                    <tr
+                      key={emp_no}
+                      className="table-row-hover cursor-pointer"
+                      onClick={() => toggleExpand(emp)}
+                    >
+                      <td className="table-td w-8">
+                        {isLoading ? (
+                          <svg className="animate-spin h-3.5 w-3.5 text-accent" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                          </svg>
+                        ) : isOpen ? (
+                          <ChevronDown size={14} className="text-accent" />
+                        ) : (
+                          <ChevronRight size={14} className="text-slate-500" />
+                        )}
+                      </td>
+                      <td className="table-td">
+                        <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border whitespace-nowrap">
+                          {emp_no}
+                        </span>
+                      </td>
+                      <td className="table-td">
+                        <div className="flex items-center gap-2.5">
+                          <Avatar name={emp.full_name || '—'} index={i} size="sm" />
+                          <span className="font-medium text-slate-200 text-[13px] whitespace-nowrap">{emp.full_name || '—'}</span>
                         </div>
                       </td>
+                      <td className="table-td text-slate-400 text-xs whitespace-nowrap">{emp.department || '—'}</td>
+                      <td className="table-td">
+                        {attendanceByEmp[emp.id] !== undefined ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                            {empRecords.length} records
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-600 italic">click to load</span>
+                        )}
+                      </td>
                     </tr>
-                  )}
-                </>
-              ))}
+
+                    {/* Expanded Records */}
+                    {isOpen && (
+                      <tr key={`${emp_no}-exp`}>
+                        <td colSpan={5} className="px-4 pb-3 pt-0">
+                          <div className="ml-8 rounded-lg border border-border overflow-x-auto">
+                            {isLoading ? (
+                              <div className="flex items-center justify-center py-8 text-slate-500 text-xs gap-2">
+                                <svg className="animate-spin h-3.5 w-3.5 text-accent" viewBox="0 0 24 24" fill="none">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                </svg>
+                                Loading attendance…
+                              </div>
+                            ) : empRecords.length === 0 ? (
+                              <div className="py-8 text-center text-slate-600 text-xs">No records found</div>
+                            ) : (
+                              <table className="w-full min-w-[900px]">
+                                <thead>
+                                  <tr className="bg-surface/50">
+                                    {['Date','Timetable','On Duty','Off Duty','Check In','Check Out','Late-minutes','Early-minutes','Status','OT Time','Work Time'].map(h => (
+                                      <th key={h} className="table-th text-[11px] text-slate-500 whitespace-nowrap">{h}</th>
+                                    ))}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {empRecords.map((row) => (
+                                    <tr key={row.id} className="border-t border-border/50 hover:bg-card-hover transition-colors">
+                                      <td className="table-td text-slate-400 text-xs whitespace-nowrap">{row.date}</td>
+                                      <td className="table-td">
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">{row.timetable}</span>
+                                      </td>
+                                      <td className="table-td text-slate-400 text-xs font-mono whitespace-nowrap">{row.on_duty || '—'}</td>
+                                      <td className="table-td text-slate-400 text-xs font-mono whitespace-nowrap">{row.off_duty || '—'}</td>
+                                      <td className="table-td text-slate-300 text-xs font-mono whitespace-nowrap">{row.clock_in || '—'}</td>
+                                      <td className="table-td text-slate-300 text-xs font-mono whitespace-nowrap">{row.clock_out || '—'}</td>
+                                      <td className="table-td text-xs font-mono whitespace-nowrap">
+                                        {row.late ? <span className="text-red-400 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">{row.late}</span> : <span className="text-slate-600">—</span>}
+                                      </td>
+                                      <td className="table-td text-xs font-mono whitespace-nowrap">
+                                        {row.early ? <span className="text-green-400 font-semibold bg-green-500/10 px-1.5 py-0.5 rounded">{row.early}</span> : <span className="text-slate-600">—</span>}
+                                      </td>
+                                      <td className="table-td text-xs text-center whitespace-nowrap">
+                                        {(() => {
+                                          const s = getStatus(row)
+                                          if (s === 'Absent')  return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">Absent</span>
+                                          if (s === 'Late')    return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Late</span>
+                                          return <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-500/10 text-green-400 border border-green-500/20">Present</span>
+                                        })()}
+                                      </td>
+                                      <td className="table-td text-xs font-mono whitespace-nowrap">
+                                        {row.ot_time ? <span className="text-blue-400 font-semibold">{row.ot_time}</span> : <span className="text-slate-600">—</span>}
+                                      </td>
+                                      <td className="table-td text-xs font-mono text-slate-300 font-semibold whitespace-nowrap">{row.work_time || '—'}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                )
+              })}
             </tbody>
           </table>
         )}

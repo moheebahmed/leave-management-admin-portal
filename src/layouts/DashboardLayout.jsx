@@ -17,10 +17,11 @@ const DashboardLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [employees, setEmployees] = useState(INITIAL_EMPLOYEES)
   const [leaveBalances, setLeaveBalances] = useState(INITIAL_LEAVE_BALANCES)
+  const [attendanceRecords, setAttendanceRecords] = useState([])
   const { toast, showToast, hideToast } = useToast()
 
   return (
-    <AppContext.Provider value={{ employees, setEmployees, leaveBalances, setLeaveBalances, showToast }}>
+    <AppContext.Provider value={{ employees, setEmployees, leaveBalances, setLeaveBalances, attendanceRecords, setAttendanceRecords, showToast }}>
       <div className="flex h-screen overflow-hidden app-bg" style={{ height: '100dvh' }}>
 
         {/* Mobile overlay */}
@@ -37,7 +38,7 @@ const DashboardLayout = () => {
           transition-transform duration-300
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
-          <Sidebar collapsed={collapsed} onClose={() => setMobileOpen(false)} />
+          <Sidebar collapsed={window.innerWidth >= 1024 ? collapsed : false} onClose={() => setMobileOpen(false)} />
         </div>
 
         <div className="flex flex-col flex-1 overflow-hidden min-w-0">
