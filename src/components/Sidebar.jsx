@@ -46,10 +46,11 @@ const NAV_GROUPS = [
     items: [
       { to: '/attendance-upload', label: 'Upload Attendance', icon: Upload },
       { to: '/attendance-records', label: 'Attendance Records', icon: CalendarCheck },
-      { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
+      //  ----attendence registe this side 
       // { to: '/roster',              label: 'Roster',              icon: LayoutDashboard },
       { to: '/shifts', label: 'Shifts', icon: Clock },
       { to: '/holidays', label: 'Holidays', icon: CalendarDays },
+      { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
     ],
   },
   {
@@ -84,7 +85,7 @@ const Sidebar = ({ collapsed, onClose }) => {
     >
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border overflow-hidden">
-        
+
         <div className="w-10 h-10">
           <img
             src="/logo.png"
