@@ -27,6 +27,18 @@ const extractTime = (val) => {
   return s.slice(0, 5)
 }
 
+// Convert minutes to "Xh Ym" format
+const minsToHours = (val) => {
+  if (!val) return null
+  const total = parseFloat(val)
+  if (isNaN(total) || total <= 0) return null
+  const h = Math.floor(total / 60)
+  const m = Math.round(total % 60)
+  if (h === 0) return `${m}m`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}m`
+}
+
 // Calculate attendance status
 const getStatus = (row) => {
   const hasWork = row.work_time && parseFloat(row.work_time) > 0
@@ -69,9 +81,9 @@ const mapEmpAttendance = (emp, rows) =>
 const AttendanceRecords = () => {
   const { showToast } = useApp()
   const [search, setSearch]               = useState('')
-  const [empList, setEmpList]             = useState([])        //   only employees list
-  const [attendanceByEmp, setAttendanceByEmp] = useState({})   //   lazy-loaded emp
-  const [empLoadingMap, setEmpLoadingMap] = useState({})        //  per-row loading state
+  const [empList, setEmpList]             = useState([])        // ✅ sirf employees list
+  const [attendanceByEmp, setAttendanceByEmp] = useState({})   // ✅ lazy-loaded per emp
+  const [empLoadingMap, setEmpLoadingMap] = useState({})        // ✅ per-row loading state
   const [loading, setLoading]             = useState(false)
   const [selectedMonth, setMonth]         = useState('')
   const [selectedDept,  setDept]          = useState('All Departments')
@@ -79,7 +91,7 @@ const AttendanceRecords = () => {
   const [dateTo,   setDateTo]             = useState('')
   const [expanded, setExpanded]           = useState({})
 
-  //  STEP 1: only employees fetch  
+  // ✅ STEP 1: Sirf employees fetch karo — koi attendance call nahi
   useEffect(() => {
     const fetchEmployees = async () => {
       setLoading(true)
@@ -96,7 +108,7 @@ const AttendanceRecords = () => {
     fetchEmployees()
   }, [])
 
-  // 
+  // ✅ STEP 2: Sirf expand hone par us employee ki attendance fetch karo
   const toggleExpand = async (emp) => {
     const emp_no = String(emp.employee_code || emp.id)
     const isOpen = expanded[emp_no]
@@ -104,10 +116,10 @@ const AttendanceRecords = () => {
     // Agar close kar raha hai toh bas toggle karo
     setExpanded(prev => ({ ...prev, [emp_no]: !isOpen }))
 
-    // 
+    // Agar pehle se data loaded hai ya close ho raha hai toh return
     if (isOpen || attendanceByEmp[emp.id] !== undefined) return
 
-    // new data fetch 
+    // Naya data fetch karo
     setEmpLoadingMap(prev => ({ ...prev, [emp.id]: true }))
     try {
       const res = await axios.get(
@@ -337,7 +349,7 @@ const AttendanceRecords = () => {
                               <table className="w-full min-w-[900px]">
                                 <thead>
                                   <tr className="bg-surface/50">
-                                    {['Date','Timetable','On Duty','Off Duty','Check In','Check Out','Late minutes','Early minutes','Status','OT Time','Work hour'].map(h => (
+                                    {['Date','Timetable','On Duty','Off Duty','Check In','Check Out','Late-minutes','Early-minutes','Status','OT Time','Work hour'].map(h => (
                                       <th key={h} className="table-th text-[11px] text-slate-500 whitespace-nowrap">{h}</th>
                                     ))}
                                   </tr>
@@ -370,7 +382,7 @@ const AttendanceRecords = () => {
                                       <td className="table-td text-xs font-mono whitespace-nowrap">
                                         {row.ot_time ? <span className="text-blue-400 font-semibold">{row.ot_time}</span> : <span className="text-slate-600">—</span>}
                                       </td>
-                                      <td className="table-td text-xs font-mono text-slate-300 font-semibold whitespace-nowrap">{row.work_time || '—'}</td>
+                                      <td className="table-td text-xs font-mono text-slate-300 font-semibold whitespace-nowrap">{minsToHours(row.work_time) || '—'}</td>
                                     </tr>
                                   ))}
                                 </tbody>
