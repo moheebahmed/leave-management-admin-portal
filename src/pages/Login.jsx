@@ -36,9 +36,9 @@ const Login = () => {
         return
       }
 
-      sessionStorage.setItem('token', token)
-      sessionStorage.setItem('user', JSON.stringify(user))
-      sessionStorage.setItem('isAuthenticated', 'true')
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
+      localStorage.setItem('isAuthenticated', 'true')
 
       window.dispatchEvent(new Event('auth-change'))
 
@@ -93,9 +93,13 @@ const Login = () => {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center font-syne font-black text-xl text-white shadow-[0_0_30px_rgba(224,77,51,0.3)]">
-                LO
+            <div className="flex items-center justify-center gap-3 mb-4">
+         <div className="w-15 h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+          <img
+                src="/logo.png"
+                alt="logo"
+                className="w-full h-full object-contain"
+              />
               </div>
               <div className="text-left">
                 <div className="font-syne font-bold text-2xl text-white leading-tight">

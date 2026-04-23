@@ -22,7 +22,7 @@ const Navbar = ({ toggleSidebar }) => {
   const [notifications, setNotifications] = useState([])
   const [notificationsLoading, setNotificationsLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640)
-  const userEmail = sessionStorage.getItem('userEmail') || 'hr@conceptrecall.com'
+  const userEmail = localStorage.getItem('userEmail') || 'hr@conceptrecall.com'
   const logoutRef = useRef(null)
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const Navbar = ({ toggleSidebar }) => {
   }
 
   const handleLogout = () => {
-    sessionStorage.clear()
+    localStorage.clear()
     window.dispatchEvent(new Event('auth-change'))
     navigate('/login')
   }

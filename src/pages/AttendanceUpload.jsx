@@ -6,30 +6,27 @@ import { API_BASE_URL, getAuthHeaders } from '../api/config'
 import { useApp } from '../layouts/DashboardLayout'
 import { useNavigate } from 'react-router-dom'
 
-// Convert Excel serial date to YYYY-MM-DD
+// ─── Date helpers ────────────────────────────────────────────────────────────
+
 const excelDateToString = (val) => {
   if (!val) return null
-  // Already YYYY-MM-DD
   if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val
-  // M/D/YYYY format e.g. "1/2/2026"
   if (typeof val === 'string' && val.includes('/')) {
     const parts = val.split('/')
     if (parts.length === 3) {
       const [m, d, y] = parts
-      return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
     }
   }
-  // Excel serial number
   if (typeof val === 'number') {
     const date = XLSX.SSF.parse_date_code(val)
     if (date) {
-      return `${date.y}-${String(date.m).padStart(2,'0')}-${String(date.d).padStart(2,'0')}`
+      return `${date.y}-${String(date.m).padStart(2, '0')}-${String(date.d).padStart(2, '0')}`
     }
   }
   return String(val).trim()
 }
 
-// Convert time value to HH:MM:SS
 const toTimeString = (val) => {
   if (!val) return null
   if (typeof val === 'string') return val.trim()
@@ -38,30 +35,98 @@ const toTimeString = (val) => {
     const h = Math.floor(totalSec / 3600)
     const m = Math.floor((totalSec % 3600) / 60)
     const s = totalSec % 60
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '00')}`
   }
   return String(val).trim()
 }
 
-// Map Excel row to API payload format
+// ─── Computed field helpers ───────────────────────────────────────────────────
+
+// Parse "HH:MM" or "HH:MM:SS" → total minutes
+const timeToMins = (t) => {
+  if (!t) return null
+  const parts = String(t).split(':')
+  if (parts.length < 2) return null
+  const h = parseInt(parts[0], 10)
+  const m = parseInt(parts[1], 10)
+  if (isNaN(h) || isNaN(m)) return null
+  return h * 60 + m
+}
+
+// Total minutes → "Xh Ym"
+const minsToHours = (mins) => {
+  if (mins == null || mins <= 0) return null
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  if (h === 0) return `${m}m`
+  if (m === 0) return `${h}h`
+  return `${h}h ${m}m`
+}
+
+// Extract HH:MM from a time string
+const extractHHMM = (val) => {
+  if (!val) return null
+  const s = String(val)
+  const m = s.match(/(\d{2}:\d{2})/)
+  return m ? m[1] : s.slice(0, 5)
+}
+
+// Compute derived fields from raw mapped row
+const computeRow = (row) => {
+  const onDutyMins  = timeToMins(row.on_duty)
+  const offDutyMins = timeToMins(row.off_duty)
+  const checkInMins  = timeToMins(row.check_in)
+  const checkOutMins = timeToMins(row.check_out)
+
+  const late  = (checkInMins != null && onDutyMins != null && checkInMins > onDutyMins)
+    ? checkInMins - onDutyMins : null
+  const early = (checkOutMins != null && offDutyMins != null && checkOutMins < offDutyMins)
+    ? offDutyMins - checkOutMins : null
+  const work  = (checkInMins != null && checkOutMins != null && checkOutMins > checkInMins)
+    ? checkOutMins - checkInMins : null
+  const ot    = (checkOutMins != null && offDutyMins != null && checkOutMins > offDutyMins)
+    ? checkOutMins - offDutyMins : null
+
+  // let status = 'Absent'
+  // if (checkInMins != null) status = late ? 'Late' : 'Present'
+
+  return {
+    ...row,
+    on_duty:   extractHHMM(row.on_duty),
+    off_duty:  extractHHMM(row.off_duty),
+    check_in:  extractHHMM(row.check_in),
+    check_out: extractHHMM(row.check_out),
+    timetable: 'Full Day',
+    late_minutes:  late,
+    early_minutes: early,
+    work_mins: work,
+    ot_mins:   ot,
+    // status,
+  }
+}
+
+// ─── Row mapper ──────────────────────────────────────────────────────────────
+
 const mapRow = (row) => ({
   employee_code: String(row['Emp No.'] || row['employee_code'] || row['Emp No'] || '').trim(),
   date:          excelDateToString(row['Date'] || row['date']),
-  check_in:      toTimeString(row['Clock In'] || row['check_in'] || row['CheckIn']) || null,
+  check_in:      toTimeString(row['Clock In']  || row['check_in']  || row['CheckIn'])  || null,
   check_out:     toTimeString(row['Clock Out'] || row['check_out'] || row['CheckOut']) || null,
-  on_duty:       toTimeString(row['On duty'] || row['on_duty'] || row['On Duty']) || null,
-  off_duty:      toTimeString(row['Off duty'] || row['off_duty'] || row['Off Duty']) || null,
+  on_duty:       toTimeString(row['On duty']   || row['on_duty']   || row['On Duty'])  || null,
+  off_duty:      toTimeString(row['Off duty']  || row['off_duty']  || row['Off Duty']) || null,
 })
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 const AttendanceUpload = () => {
   const { showToast, setAttendanceRecords } = useApp()
   const navigate = useNavigate()
-  const [dragOver, setDragOver]   = useState(false)
-  const [file, setFile]           = useState(null)
-  const [preview, setPreview]     = useState([])
-  const [payload, setPayload]     = useState([])
-  const [uploaded, setUploaded]   = useState(false)
-  const [loading, setLoading]     = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const [file, setFile]         = useState(null)
+  const [preview, setPreview]   = useState([])
+  const [payload, setPayload]   = useState([])
+  const [uploaded, setUploaded] = useState(false)
+  const [loading, setLoading]   = useState(false)
 
   const parseFile = (f) => {
     const reader = new FileReader()
@@ -71,11 +136,10 @@ const AttendanceUpload = () => {
         const workbook = XLSX.read(data, { type: 'array', cellDates: true })
         const sheet    = workbook.Sheets[workbook.SheetNames[0]]
         const rows     = XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false })
-        console.log('Raw Excel rows:', rows) // debug
         const mapped   = rows.map(mapRow).filter(r => r.employee_code && r.date)
-        console.log('Mapped payload:', mapped) // debug
         setPayload(mapped)
-        setPreview(mapped.slice(0, 10))
+        // compute derived fields for preview only
+        setPreview(mapped.slice(0, 31).map(computeRow))
       } catch (err) {
         console.error('Parse error:', err)
         showToast('Failed to parse file. Check format.')
@@ -112,7 +176,7 @@ const AttendanceUpload = () => {
         payload,
         { headers: getAuthHeaders() }
       )
-      setAttendanceRecords(payload) // save to global state
+      setAttendanceRecords(payload)
       setUploaded(true)
       showToast('Attendance uploaded successfully!')
       setTimeout(() => navigate('/attendance-records'), 1000)
@@ -209,37 +273,100 @@ const AttendanceUpload = () => {
         )}
       </div>
 
-      {/* Preview Table */}
+      {/* ── Preview Table (same style as AttendanceRecords expanded rows) ── */}
       {preview.length > 0 && (
         <div className="card-base overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h3 className="section-title">Preview</h3>
             <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-              Showing {preview.length} of {payload.length} rows
+              Showing  {payload.length} rows
             </span>
           </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[1000px]">
               <thead>
                 <tr className="bg-[#000000]">
-                  {['Emp Code','Date','Check In','Check Out','On Duty','Off Duty'].map(h => (
-                    <th key={h} className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">{h}</th>
+                  {[
+                    'Emp Code', 'Date', 'Timetable',
+                    'On Duty', 'Off Duty',
+                    'Check In', 'Check Out',
+                    'Late-minutes', 'Early-minutes',
+                    'OT Time', 'Work Hour',
+                  ].map(h => (
+                    <th key={h} className="table-th text-[11px] font-semibold text-[rgb(173,173,173)] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {preview.map((row, i) => (
-                  <tr key={i} className="table-row-hover last:[&>td]:border-0">
+                  <tr key={i} className="border-t border-border/50 hover:bg-card-hover transition-colors">
+
+                    {/* Emp Code */}
                     <td className="table-td">
                       <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
                         {row.employee_code}
                       </span>
                     </td>
-                    <td className="table-td text-slate-300 text-xs whitespace-nowrap">{row.date}</td>
-                    <td className="table-td font-mono text-slate-300 text-xs whitespace-nowrap">{row.check_in || '—'}</td>
-                    <td className="table-td font-mono text-slate-300 text-xs whitespace-nowrap">{row.check_out || '—'}</td>
-                    <td className="table-td font-mono text-slate-400 text-xs whitespace-nowrap">{row.on_duty || '—'}</td>
-                    <td className="table-td font-mono text-slate-400 text-xs whitespace-nowrap">{row.off_duty || '—'}</td>
+
+                    {/* Date */}
+                    <td className="table-td text-slate-400 text-xs whitespace-nowrap">{row.date}</td>
+
+                    {/* Timetable */}
+                    <td className="table-td">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">
+                        {row.timetable}
+                      </span>
+                    </td>
+
+                    {/* On Duty */}
+                    <td className="table-td text-slate-400 text-xs font-mono whitespace-nowrap">{row.on_duty || '—'}</td>
+
+                    {/* Off Duty */}
+                    <td className="table-td text-slate-400 text-xs font-mono whitespace-nowrap">{row.off_duty || '—'}</td>
+
+                    {/* Check In */}
+                    <td className="table-td text-slate-300 text-xs font-mono whitespace-nowrap">{row.check_in || '—'}</td>
+
+                    {/* Check Out */}
+                    <td className="table-td text-slate-300 text-xs font-mono whitespace-nowrap">{row.check_out || '—'}</td>
+
+                    {/* Late-minutes */}
+                    <td className="table-td text-xs font-mono whitespace-nowrap">
+                      {row.late_minutes
+                        ? <span className="text-red-400 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">{row.late_minutes}</span>
+                        : <span className="text-slate-600">—</span>}
+                    </td>
+
+                    {/* Early-minutes */}
+                    <td className="table-td text-xs font-mono whitespace-nowrap">
+                      {row.early_minutes
+                        ? <span className="text-green-400 font-semibold bg-green-500/10 px-1.5 py-0.5 rounded">{row.early_minutes}</span>
+                        : <span className="text-slate-600">—</span>}
+                    </td>
+
+                    {/* Status */}
+                    {/* <td className="table-td text-xs text-center whitespace-nowrap">
+                      {row.status === 'Absent'
+                        ? <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">Absent</span>
+                        : row.status === 'Late'
+                        ? <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Late</span>
+                        : <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-500/10 text-green-400 border border-green-500/20">Present</span>
+                      }
+                    </td> */}
+
+                    {/* OT Time */}
+                    <td className="table-td text-xs font-mono whitespace-nowrap">
+                      {row.ot_mins
+                        ? <span className="text-blue-400 font-semibold">{row.ot_mins}</span>
+                        : <span className="text-slate-600">—</span>}
+                    </td>
+
+                    {/* Work Hour */}
+                    <td className="table-td text-xs font-mono text-slate-300 font-semibold whitespace-nowrap">
+                      {minsToHours(row.work_mins) || '—'}
+                    </td>
+
                   </tr>
                 ))}
               </tbody>

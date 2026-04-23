@@ -81,9 +81,9 @@ const mapEmpAttendance = (emp, rows) =>
 const AttendanceRecords = () => {
   const { showToast } = useApp()
   const [search, setSearch] = useState('')
-  const [empList, setEmpList] = useState([])        // ✅ sirf employees list
-  const [attendanceByEmp, setAttendanceByEmp] = useState({})   // ✅ lazy-loaded per emp
-  const [empLoadingMap, setEmpLoadingMap] = useState({})        // ✅ per-row loading state
+  const [empList, setEmpList] = useState([])       
+  const [attendanceByEmp, setAttendanceByEmp] = useState({})   
+  const [empLoadingMap, setEmpLoadingMap] = useState({})       
   const [loading, setLoading] = useState(false)
   const [selectedMonth, setMonth] = useState('')
   const [selectedDept, setDept] = useState('All Departments')
@@ -91,7 +91,7 @@ const AttendanceRecords = () => {
   const [dateTo, setDateTo] = useState('')
   const [expanded, setExpanded] = useState({})
 
-  // ✅ STEP 1: Sirf employees fetch karo — koi attendance call nahi
+
   useEffect(() => {
     const fetchEmployees = async () => {
       setLoading(true)
@@ -108,18 +108,16 @@ const AttendanceRecords = () => {
     fetchEmployees()
   }, [])
 
-  // ✅ STEP 2: Sirf expand hone par us employee ki attendance fetch karo
   const toggleExpand = async (emp) => {
     const emp_no = String(emp.employee_code || emp.id)
     const isOpen = expanded[emp_no]
 
-    // Agar close kar raha hai toh bas toggle karo
     setExpanded(prev => ({ ...prev, [emp_no]: !isOpen }))
 
-    // Agar pehle se data loaded hai ya close ho raha hai toh return
+   
     if (isOpen || attendanceByEmp[emp.id] !== undefined) return
 
-    // Naya data fetch karo
+
     setEmpLoadingMap(prev => ({ ...prev, [emp.id]: true }))
     try {
       const res = await axios.get(
@@ -155,8 +153,7 @@ const AttendanceRecords = () => {
     return matchSearch && matchDept
   })
 
-  // For the subtitle count — count records that are loaded & pass date filters
-  const totalRecords = filteredEmps.reduce((acc, emp) => {
+   const totalRecords = filteredEmps.reduce((acc, emp) => {
     const rows = (attendanceByEmp[emp.id] || []).filter((r) => {
       const matchMonth = selectedMonth ? r.date.startsWith(selectedMonth) : true
       const matchFrom = dateFrom ? r.date >= dateFrom : true
@@ -285,6 +282,7 @@ const AttendanceRecords = () => {
 
       {/* Table */}
       <TableWrapper title="All Attendance Records">
+        
         {loading ? (
           <div className="flex items-center justify-center py-16 text-slate-500 text-sm gap-2">
             <svg className="animate-spin h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none">

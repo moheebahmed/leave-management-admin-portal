@@ -24,12 +24,12 @@ import Holidays from './pages/Holidays'
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
+    localStorage.getItem('isAuthenticated') === 'true'
   )
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setIsAuthenticated(sessionStorage.getItem('isAuthenticated') === 'true')
+      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true')
     }
 
     window.addEventListener('storage', handleStorageChange)

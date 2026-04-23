@@ -46,7 +46,7 @@ const NAV_GROUPS = [
     items: [
       { to: '/attendance-upload', label: 'Upload Attendance', icon: Upload },
       { to: '/attendance-records', label: 'Attendance Records', icon: CalendarCheck },
-      //  ----attendence registe this side 
+      //  ----attendence register this side but attendence is {to in bottom}
       // { to: '/roster',              label: 'Roster',              icon: LayoutDashboard },
       { to: '/shifts', label: 'Shifts', icon: Clock },
       { to: '/holidays', label: 'Holidays', icon: CalendarDays },
@@ -71,7 +71,7 @@ const Sidebar = ({ collapsed, onClose }) => {
   const navigate = useNavigate()
 
   const handleLogout = () => {
-    sessionStorage.clear()
+    localStorage.clear()
     window.dispatchEvent(new Event('auth-change'))
     navigate('/login', { replace: true })
   }
@@ -84,28 +84,30 @@ const Sidebar = ({ collapsed, onClose }) => {
       `}
     >
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border overflow-hidden">
+      <div className={`flex items-center justify-between py-4 border-b border-border overflow-hidden transition-all duration-300 ${collapsed ? 'px-1' : 'px-4'}`}>
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="w-10 h-10 shrink-0">
+            <img
+              src="/logo.png"
+              alt="logo"
+              className="w-full h-full object-contain"
+            />
+          </div>
+          <div className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 pointer-events-none w-0' : 'opacity-100'}`}>
+            <div className="font-syne font-bold text-sm text-slate-100 whitespace-nowrap leading-tight">
+              LeaveOS
+            </div>
+            <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-500">
+              HR Suite
+            </div>
+          </div>
+        </div>
 
-        <div className="w-10 h-10">
-          <img
-            src="/logo.png"
-          // alt="logo"
-          // className="w-full h-full  "
-          />
-        </div>
-        <div className={`transition-opacity duration-200 flex-1 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="font-syne font-bold text-sm text-slate-100 whitespace-nowrap leading-tight">
-            LeaveOS
-          </div>
-          <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-500">
-            HR Suite
-          </div>
-        </div>
         {/* Mobile close button */}
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden text-slate-500 hover:text-white transition-colors ml-auto"
+            className="lg:hidden text-slate-500 hover:text-white transition-colors shrink-0 ml-2"
           >
             <X size={16} />
           </button>
