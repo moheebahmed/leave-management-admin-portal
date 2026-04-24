@@ -291,7 +291,7 @@ const AttendanceUpload = () => {
                     'Emp Code', 'Date', 'Timetable',
                     'On Duty', 'Off Duty',
                     'Check In', 'Check Out',
-                    'Late-minutes', 'Early-minutes',
+                    'Late minutes', 'Early minutes',
                     'OT Time', 'Work Hour',
                   ].map(h => (
                     <th key={h} className="table-th text-[11px] font-semibold text-[rgb(173,173,173)] whitespace-nowrap">{h}</th>
