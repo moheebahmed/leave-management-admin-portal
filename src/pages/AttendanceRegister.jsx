@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { API_BASE_URL, getAuthHeaders } from '../api/config'
 
@@ -17,49 +17,8 @@ const [month, setMonth] = useState(0)
 
   const [employees, setEmployees] = useState([])
   const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [generating, setGenerating] = useState(false)
-
-  // Fetch attendance data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const headers = getAuthHeaders()
-        const url = `${API_BASE_URL}/attendance/register?month=${month + 1}&year=${year}`
-        
-        console.log('Fetching from:', url)
-        console.log('Headers:', headers)
-        
-        const res = await fetch(url, { headers })
-        
-        console.log('Response status:', res.status)
-        
-        if (!res.ok) {
-          setError(`API Error: ${res.status} ${res.statusText}`)
-          return
-        }
-        
-        const json = await res.json()
-        console.log('Response data:', json)
-        
-        if (json.success) {
-          setEmployees(json.data)
-          setStats(json.stats)
-        } else {
-          setError(json.message || 'Failed to fetch data')
-        }
-      } catch (err) {
-        console.error('Fetch error:', err)
-        setError(`Error: ${err.message}`)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-  }, [month, year])
 
   // Days in month
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -102,17 +61,21 @@ const [month, setMonth] = useState(0)
 
   const handleGenerateRegister = async () => {
     setGenerating(true)
+    setError(null)
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/attendance/register/generate?month=${month + 1}&year=${year}`,
-        { 
-          method: 'POST',
-          headers: getAuthHeaders()
-        }
-      )
+      const headers = getAuthHeaders()
+      const url = `${API_BASE_URL}/attendance/register?month=${month + 1}&year=${year}`
+      
+      const res = await fetch(url, { headers })
+      
+      if (!res.ok) {
+        setError(`API Error: ${res.status} ${res.statusText}`)
+        return
+      }
+      
       const json = await res.json()
+      
       if (json.success) {
-        // Refresh the data after generation
         setEmployees(json.data)
         setStats(json.stats)
       } else {
@@ -141,16 +104,35 @@ const [month, setMonth] = useState(0)
           </p>
         </div>
 
-        {/* Month Navigator */}
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button onClick={prevMonth} className="btn-ghost" disabled={loading}>
-            <ChevronLeft size={14} />
-          </button>
-          <div className="card-base px-4 py-2 text-sm font-semibold text-slate-200 min-w-[150px] text-center">
-            {MONTHS[month]} {year}
+        {/* Month Navigator & Generate Button */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-2">
+            <button onClick={prevMonth} className="btn-ghost" disabled={generating}>
+              <ChevronLeft size={14} />
+            </button>
+            <div className="card-base px-4 py-2 text-sm font-semibold text-slate-200 min-w-[150px] text-center">
+              {MONTHS[month]} {year}
+            </div>
+            <button onClick={nextMonth} className="btn-ghost" disabled={generating}>
+              <ChevronRight size={14} />
+            </button>
           </div>
-          <button onClick={nextMonth} className="btn-ghost" disabled={loading}>
-            <ChevronRight size={14} />
+          <button
+            onClick={handleGenerateRegister}
+            disabled={generating}
+            className="btn-primary px-4 py-2 text-sm font-semibold whitespace-nowrap"
+          >
+            {generating ? (
+              <>
+                <svg className="animate-spin mr-2 h-4 w-4 inline" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                Generating...
+              </>
+            ) : (
+              'Generate Register'
+            )}
           </button>
         </div>
       </div>
@@ -173,24 +155,14 @@ const [month, setMonth] = useState(0)
       </div>
 
       {/* Loading / Error States */}
-      {loading && (
-        <div className="card-base flex items-center justify-center py-16 text-slate-400 text-sm">
-          <svg className="animate-spin mr-2 h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
-          Loading attendance data...
-        </div>
-      )}
-
-      {error && !loading && (
+      {error && (
         <div className="card-base flex items-center gap-2 py-6 px-4 text-red-400 text-sm">
           <span>⚠️</span> {error}
         </div>
       )}
 
       {/* Register Table */}
-      {!loading && !error && employees.length > 0 && (
+      {!error && employees.length > 0 && (
         <div className="card-base overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full" style={{ minWidth: `${200 + daysInMonth * 44 + 200}px` }}>
@@ -273,9 +245,9 @@ const [month, setMonth] = useState(0)
       )}
 
       {/* Empty state */}
-      {!loading && !error && employees.length === 0 && (
+      {!error && employees.length === 0 && (
         <div className="card-base flex items-center justify-center py-16 text-slate-500 text-sm">
-          No attendance records found for {MONTHS[month]} {year}.
+          No attendance register generated yet. Click "Generate Register" to create records for {MONTHS[month]} {year}.
         </div>
       )}
 
