@@ -46,11 +46,11 @@ const NAV_GROUPS = [
     items: [
       { to: '/attendance-upload', label: 'Upload Attendance', icon: Upload },
       { to: '/attendance-records', label: 'Attendance Records', icon: CalendarCheck },
-      //  ----attendence register this side but attendence is {to in bottom}
+      { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
       // { to: '/roster',              label: 'Roster',              icon: LayoutDashboard },
       { to: '/shifts', label: 'Shifts', icon: Clock },
       { to: '/holidays', label: 'Holidays', icon: CalendarDays },
-      { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
+     
     ],
   },
   {
