@@ -6,7 +6,6 @@ import { API_BASE_URL, getAuthHeaders } from '../api/config'
 import { useApp } from '../layouts/DashboardLayout'
 import { TableWrapper, EmptyState } from '../components/Table'
 import { DeptBadge } from '../components/Badge'
-
 import Avatar from '../components/Avatar'
 
 const Employees = () => {
