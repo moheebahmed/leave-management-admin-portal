@@ -18,6 +18,7 @@ import AttendanceUpload from './pages/AttendanceUpload'
 import AttendanceRecords from './pages/AttendanceRecords'
 import AttendanceRegister from './pages/AttendanceRegister'
 import Payroll from './pages/Payroll'
+import PayrollSettings from './pages/PayrollSettings'
 import Shifts from './pages/Shifts'
 import Holidays from './pages/Holidays'
 // import Roster from './pages/Roster'
@@ -79,6 +80,7 @@ const App = () => {
         <Route path="holidays" element={<Holidays />} />
         {/* <Route path="roster" element={<Roster />} /> */}
         <Route path="payroll" element={<Payroll />} />
+        <Route path="payroll-settings" element={<PayrollSettings />} />
       </Route>
 
       {/* Catch all - redirect to login */}

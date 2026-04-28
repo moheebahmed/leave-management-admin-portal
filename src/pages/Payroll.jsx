@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Search, Download, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Download, DollarSign, Zap } from "lucide-react";
 import { TableWrapper, EmptyState } from "../components/Table";
 import Avatar from "../components/Avatar";
+import { API_BASE_URL, getAuthHeaders } from "../api/config";
+import { useApp } from "../layouts/DashboardLayout";
 
 const DUMMY_PAYROLL = [
   {
@@ -67,8 +69,93 @@ const formatPKR = (amount) =>
   }).format(amount);
 
 const Payroll = () => {
+  const { showToast } = useApp();
   const [search, setSearch] = useState("");
-  const [records] = useState(DUMMY_PAYROLL);
+  const [records, setRecords] = useState(DUMMY_PAYROLL);
+  const [generating, setGenerating] = useState(false);
+  const [payrollMonth, setPayrollMonth] = useState(
+    new Date().getMonth() + 1
+  );
+  const [payrollYear, setPayrollYear] = useState(new Date().getFullYear());
+
+  // Load payroll settings from API
+  useEffect(() => {
+    loadPayrollSettings();
+  }, []);
+
+  const loadPayrollSettings = async () => {
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`${API_BASE_URL}/settings/payroll`, {
+        headers,
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setPayrollMonth(json.data.payroll_month || new Date().getMonth() + 1);
+          setPayrollYear(json.data.payroll_year || new Date().getFullYear());
+        }
+      } else {
+        // Fallback to localStorage
+        const settings = localStorage.getItem("payroll_settings");
+        if (settings) {
+          const parsed = JSON.parse(settings);
+          setPayrollMonth(parsed.payroll_month || new Date().getMonth() + 1);
+          setPayrollYear(parsed.payroll_year || new Date().getFullYear());
+        }
+      }
+    } catch (err) {
+      console.error("Load settings error:", err);
+      // Fallback to localStorage
+      const settings = localStorage.getItem("payroll_settings");
+      if (settings) {
+        const parsed = JSON.parse(settings);
+        setPayrollMonth(parsed.payroll_month || new Date().getMonth() + 1);
+        setPayrollYear(parsed.payroll_year || new Date().getFullYear());
+      }
+    }
+  };
+
+  // Generate payroll
+  const handleGeneratePayroll = async () => {
+    setGenerating(true);
+    try {
+      const headers = getAuthHeaders();
+      const settings = JSON.parse(
+        localStorage.getItem("payroll_settings") || "{}"
+      );
+
+      const res = await fetch(`${API_BASE_URL}/payroll/generate`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          month: payrollMonth,
+          year: payrollYear,
+          start_day: settings.payroll_start_day || 1,
+          end_day: settings.payroll_end_day || 30,
+        }),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setRecords(json.data || DUMMY_PAYROLL);
+          showToast("Payroll generated successfully", "success");
+        } else {
+          showToast(json.message || "Failed to generate payroll", "error");
+        }
+      } else {
+        // Fallback to dummy data if API not available
+        showToast("Using sample payroll data", "info");
+      }
+    } catch (err) {
+      console.error("Generate error:", err);
+      showToast("Error generating payroll", "error");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const filtered = records.filter(
     (r) =>
@@ -94,13 +181,27 @@ const Payroll = () => {
             <span className="text-white font-bold">Management</span>
           </h2>
           <p className="page-subtitle font-semibold text-[rgb(173,173,173)]">
-            March 2026 — {records.length} employees
+            {new Date(payrollYear, payrollMonth - 1).toLocaleDateString("en", {
+              month: "long",
+              year: "numeric",
+            })}{" "}
+            — {records.length} employees
           </p>
         </div>
-        <button className="btn-primary self-start sm:self-auto">
-          <Download size={14} />
-          Export Payroll
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 self-start sm:self-auto">
+          <button
+            onClick={handleGeneratePayroll}
+            disabled={generating}
+            className="btn-primary flex items-center gap-2"
+          >
+            <Zap size={14} />
+            {generating ? "Generating..." : "Generate Payroll"}
+          </button>
+          <button className="btn-outline flex items-center gap-2">
+            <Download size={14} />
+            Export Payroll
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}

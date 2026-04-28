@@ -57,6 +57,7 @@ const NAV_GROUPS = [
     label: 'Payroll',
     items: [
       { to: '/payroll', label: 'Payroll', icon: Banknote },
+      { to: '/payroll-settings', label: 'Payroll Settings', icon: Settings },
     ],
   },
   {
@@ -160,12 +161,12 @@ const Sidebar = ({ collapsed, onClose }) => {
           >
             System
           </div>
-          <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-card/70 hover:text-slate-200 transition-all duration-150 overflow-hidden whitespace-nowrap">
+          {/* <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-card/70 hover:text-slate-200 transition-all duration-150 overflow-hidden whitespace-nowrap">
             <Settings size={15} className="shrink-0" />
             <span className={`transition-opacity duration-200 ${collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
               Settings
             </span>
-          </button>
+          </button> */}
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-500 hover:bg-card/70 hover:text-danger transition-all duration-150 overflow-hidden whitespace-nowrap"
