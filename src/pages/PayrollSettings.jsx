@@ -73,7 +73,7 @@ const PayrollSettings = () => {
     setLoading(true);
     try {
       const headers = getAuthHeaders();
-      
+
       // Save to API
       const res = await fetch(`${API_BASE_URL}/settings/payroll`, {
         method: "PUT",
@@ -155,7 +155,9 @@ const PayrollSettings = () => {
                     min="1"
                     max="31"
                     value={settings.payroll_start_day}
-                    onChange={(e) => handleChange("payroll_start_day", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("payroll_start_day", e.target.value)
+                    }
                     className="form-input-base"
                   />
                   <p className="text-xs text-slate-500 mt-1">
@@ -173,7 +175,9 @@ const PayrollSettings = () => {
                     min="1"
                     max="31"
                     value={settings.payroll_end_day}
-                    onChange={(e) => handleChange("payroll_end_day", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("payroll_end_day", e.target.value)
+                    }
                     className="form-input-base"
                   />
                   <p className="text-xs text-slate-500 mt-1">
@@ -186,7 +190,8 @@ const PayrollSettings = () => {
               <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-4">
                 <p className="text-xs text-slate-400 mb-2">Current Period:</p>
                 <p className="text-sm font-semibold text-slate-200">
-                  Day {settings.payroll_start_day} to Day {settings.payroll_end_day} of each month
+                  Day {settings.payroll_start_day} to Day{" "}
+                  {settings.payroll_end_day} of each month
                 </p>
               </div>
             </div>
@@ -212,9 +217,9 @@ const PayrollSettings = () => {
           {/* Info Box */}
           <div className="card-base bg-blue-500/5 border border-blue-500/20 p-4">
             <p className="text-xs text-blue-300">
-              <span className="font-semibold">ℹ️ Note:</span> These settings define the
-              payroll period for attendance calculation and payroll generation. Adjust
-              based on your organization's payroll cycle.
+              <span className="font-semibold">ℹ️ Note:</span> These settings
+              define the payroll period for attendance calculation and payroll
+              generation. Adjust based on your organization's payroll cycle.
             </p>
           </div>
         </>
