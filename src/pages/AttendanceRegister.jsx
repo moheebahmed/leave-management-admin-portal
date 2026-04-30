@@ -81,71 +81,87 @@ const AttendanceRegister = () => {
     }
   };
 
+   // ─── CORE FIX ───────────────────────────────────────────────────────────────
+  // Payroll cycle is ALWAYS cross-month:
+  //   startDay of current month  →  endDay of next month
+  // Returns full ISO date strings ["2026-01-14", ..., "2026-02-15"] so that
+  // duplicate day numbers (14 and 15 appear in both Jan & Feb) never clash.
   const getDaysInPayrollCycle = () => {
     const startDay = payrollSettings.payroll_start_day;
     const endDay = payrollSettings.payroll_end_day;
     const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
 
-    if (startDay <= endDay) {
-      return Array.from(
-        { length: endDay - startDay + 1 },
-        (_, i) => startDay + i,
-      );
-    } else {
-      const daysFromCurrent = Array.from(
-        { length: daysInCurrentMonth - startDay + 1 },
-        (_, i) => startDay + i,
-      );
-      const daysFromNext = Array.from({ length: endDay }, (_, i) => i + 1);
-      return [...daysFromCurrent, ...daysFromNext];
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
+
+    const dates = [];
+
+    // Current month: startDay → last day
+    for (let d = startDay; d <= daysInCurrentMonth; d++) {
+      dates.push(`${year}-${pad(month + 1)}-${pad(d)}`);
     }
-  };
 
-  const days = getDaysInPayrollCycle();
-
-  const getDateForDay = (d) => {
-    const startDay = payrollSettings.payroll_start_day;
-    const endDay = payrollSettings.payroll_end_day;
-
-    if (startDay > endDay && d <= endDay) {
-      const nextMonth = month === 11 ? 0 : month + 1;
-      const nextYear = month === 11 ? year + 1 : year;
-      return `${nextYear}-${pad(nextMonth + 1)}-${pad(d)}`;
+    // Next month: 1 → endDay
+    for (let d = 1; d <= endDay; d++) {
+      dates.push(`${nextYear}-${pad(nextMonth + 1)}-${pad(d)}`);
     }
-    return `${year}-${pad(month + 1)}-${pad(d)}`;
+
+    return dates;
   };
+  // ────────────────────────────────────────────────────────────────────────────
 
-  const dateStr = (d) => getDateForDay(d);
-  const isWeekend = (d) => WEEKEND_DAYS.includes(new Date(dateStr(d)).getDay());
+  const days = getDaysInPayrollCycle(); // ["YYYY-MM-DD", ...]
 
-  const getDayRecord = (employee, d) => {
-    const ds = dateStr(d);
-    return employee.daily_records?.find((r) => r.date === ds) || null;
-  };
+  const isWeekend = (dateString) =>
+    WEEKEND_DAYS.includes(new Date(dateString).getDay());
 
-  const getCellStyle = (employee, d) => {
-    if (isWeekend(d))
-      return { bg: "bg-slate-700/30", text: "text-slate-500", label: "WE" };
-    const record = getDayRecord(employee, d);
-    const status = record?.status;
+  const getDayNum = (dateString) => parseInt(dateString.split("-")[2], 10);
 
-    switch (status) {
-      case "Present":
-        return { bg: "bg-emerald/15", text: "text-emerald", label: "P" };
-      case "Late":
-        return { bg: "bg-yellow-500/15", text: "text-yellow-400", label: "L" };
-      case "Absent":
-        return { bg: "bg-red-500/10", text: "text-red-400", label: "A" };
-      case "Half Day":
-        return { bg: "bg-blue-500/15", text: "text-blue-400", label: "HD" };
-      case "Holiday":
-        return { bg: "bg-amber/15", text: "text-amber", label: "H" };
-      case "Leave":
-        return { bg: "bg-purple-500/15", text: "text-purple-400", label: "LV" };
-      default:
-        return { bg: "bg-slate-800/30", text: "text-slate-600", label: "—" };
-    }
-  };
+  const getDayRecord = (employee, dateString) =>
+    employee.daily_records?.find((r) => r.date === dateString) || null;
+
+const LEAVE_TYPE_LABELS = {
+  "Annual Leaves": "AL",
+  "Casual Leaves": "CL",
+  "Half Journey Leave": "HJL",
+  "Paid Leave": "PL",
+  "Sick Leave": "SL",
+  "Leave": "LV",
+};
+
+const getCellStyle = (employee, dateString) => {
+  if (isWeekend(dateString))
+    return { bg: "bg-slate-700/30", text: "text-slate-500", label: "WE" };
+
+  const record = getDayRecord(employee, dateString);
+  const status = record?.status;
+  const leaveType = record?.leave_type;
+
+  // ── Leave types check (status ya leave_type dono check karo) ──
+  const leaveKey = leaveType || status;
+  if (leaveKey && LEAVE_TYPE_LABELS[leaveKey]) {
+    return {
+      bg: "bg-purple-500/15",
+      text: "text-purple-400",
+      label: LEAVE_TYPE_LABELS[leaveKey],
+    };
+  }
+
+  switch (status) {
+    case "Present":
+      return { bg: "bg-emerald/15", text: "text-emerald", label: "P" };
+    case "Late":
+      return { bg: "bg-yellow-500/15", text: "text-yellow-400", label: "L" };
+    case "Absent":
+      return { bg: "bg-red-500/10", text: "text-red-400", label: "A" };
+    case "Half Day":
+      return { bg: "bg-blue-500/15", text: "text-blue-400", label: "HD" };
+    case "Holiday":
+      return { bg: "bg-amber/15", text: "text-amber", label: "H" };
+    default:
+      return { bg: "bg-slate-800/30", text: "text-slate-600", label: "—" };
+  }
+};
 
   const prevMonth = () => {
     if (month === 0) {
@@ -164,13 +180,9 @@ const AttendanceRegister = () => {
   const getPayrollPeriodLabel = () => {
     const startDay = payrollSettings.payroll_start_day;
     const endDay = payrollSettings.payroll_end_day;
-    if (startDay <= endDay) {
-      return `${MONTHS[month]} ${year} (${startDay}-${endDay})`;
-    } else {
-      const nextMonthIdx = month === 11 ? 0 : month + 1;
-      const nextYear = month === 11 ? year + 1 : year;
-      return `${MONTHS[month]} ${year} - ${MONTHS[nextMonthIdx]} ${nextYear} (${startDay}-${endDay})`;
-    }
+    const nextMonthIdx = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
+    return `${MONTHS[month]} ${year} – ${MONTHS[nextMonthIdx]} ${nextYear} (${startDay}–${endDay})`;
   };
 
   const handleGenerateRegister = async () => {
@@ -201,14 +213,12 @@ const AttendanceRegister = () => {
     }
   };
 
-  // Open edit mode for a cell — store the attendance record ID for PUT
-  const handleCellEdit = (empId, day, currentStatus, recordId) => {
-    if (isWeekend(day)) return; // don't allow editing weekends
-    setEditingCell({ empId, day, status: currentStatus, recordId });
+  const handleCellEdit = (empId, dateString, currentStatus, recordId) => {
+    if (isWeekend(dateString)) return;
+    setEditingCell({ empId, dateString, status: currentStatus, recordId });
   };
 
-  // PUT /attendance/:id  — uses the attendance record's own ID
-  const handleStatusUpdate = async (empId, day, newStatus, recordId) => {
+  const handleStatusUpdate = async (empId, dateString, newStatus, recordId) => {
     if (!recordId) {
       showToast("No attendance record found for this day", "error");
       setEditingCell(null);
@@ -217,70 +227,57 @@ const AttendanceRegister = () => {
     setUpdatingCell(true);
     try {
       const headers = getAuthHeaders();
-      const dateForUpdate = getDateForDay(day);
-
       const res = await fetch(`${API_BASE_URL}/attendance/${recordId}`, {
         method: "PUT",
         headers: { ...headers, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          date: dateForUpdate,
-          status: newStatus,
-        }),
+        body: JSON.stringify({ date: dateString, status: newStatus }),
       });
 
       if (res.ok) {
         const json = await res.json();
         if (json.success) {
-          // Update local state
-          // Update local state + recalculate summary
           setEmployees((prev) =>
             prev.map((emp) => {
-              if (emp.employee_id === empId) {
-                const updated = { ...emp };
-                const updatedRecords = [...(updated.daily_records || [])];
+              if (emp.employee_id !== empId) return emp;
 
-                const recordIdx = updatedRecords.findIndex(
-                  (r) => r.date === dateForUpdate,
-                );
-                const oldStatus =
-                  recordIdx >= 0 ? updatedRecords[recordIdx].status : null;
+              const updatedRecords = [...(emp.daily_records || [])];
+              const idx = updatedRecords.findIndex(
+                (r) => r.date === dateString,
+              );
 
-                if (recordIdx >= 0) {
-                  updatedRecords[recordIdx] = {
-                    ...updatedRecords[recordIdx],
-                    status: newStatus,
-                  };
-                } else {
-                  updatedRecords.push({
-                    date: dateForUpdate,
-                    status: newStatus,
-                    id: recordId,
-                  });
-                }
-
-                const newSummary = {
-                  present: 0,
-                  late: 0,
-                  absent: 0,
-                  half_day: 0,
-                  holiday: 0,
-                  weekends: 0,
+              if (idx >= 0) {
+                updatedRecords[idx] = {
+                  ...updatedRecords[idx],
+                  status: newStatus,
                 };
-                updatedRecords.forEach((r) => {
-                  if (r.status === "Present") newSummary.present++;
-                  else if (r.status === "Late") newSummary.late++;
-                  else if (r.status === "Absent") newSummary.absent++;
-                  else if (r.status === "Half Day") newSummary.half_day++;
-                  else if (r.status === "Holiday") newSummary.holiday++;
+              } else {
+                updatedRecords.push({
+                  date: dateString,
+                  status: newStatus,
+                  id: recordId,
                 });
-
-                return {
-                  ...updated,
-                  daily_records: updatedRecords,
-                  summary: { ...emp.summary, ...newSummary },
-                };
               }
-              return emp;
+
+              const newSummary = {
+                present: 0,
+                late: 0,
+                absent: 0,
+                half_day: 0,
+                holiday: 0,
+              };
+              updatedRecords.forEach((r) => {
+                if (r.status === "Present") newSummary.present++;
+                else if (r.status === "Late") newSummary.late++;
+                else if (r.status === "Absent") newSummary.absent++;
+                else if (r.status === "Half Day") newSummary.half_day++;
+                else if (r.status === "Holiday") newSummary.holiday++;
+              });
+
+              return {
+                ...emp,
+                daily_records: updatedRecords,
+                summary: { ...emp.summary, ...newSummary },
+              };
             }),
           );
           showToast("Attendance updated successfully", "success");
@@ -391,7 +388,7 @@ const AttendanceRegister = () => {
           },
           {
             color: "bg-purple-500/15 text-purple-400 border-purple-500/20",
-            label: "LV — Leave",
+            label: "Leaves — AL , CL , HJL , PL , SL",
           },
           {
             color: "bg-amber/15 text-amber border-amber/30",
@@ -418,7 +415,7 @@ const AttendanceRegister = () => {
         </div>
       )}
 
-      {/* Loading settings */}
+      {/* Loading */}
       {loadingSettings && (
         <div className="card-base flex items-center justify-center py-12">
           <svg
@@ -455,49 +452,47 @@ const AttendanceRegister = () => {
                     Employee
                   </th>
 
-                  {days.map((d) => (
+                  {days.map((dateString) => (
                     <th
-                      key={d}
+                      key={dateString}
                       className={`table-th font-semibold text-center whitespace-nowrap px-1 ${
-                        isWeekend(d)
+                        isWeekend(dateString)
                           ? "bg-red-500/15 text-slate-600"
                           : "bg-[#000000] text-[rgb(173,173,173)]"
                       }`}
                     >
-                      <div className="text-[11px]">{pad(d)}</div>
+                      <div className="text-[11px]">
+                        {pad(getDayNum(dateString))}
+                      </div>
                       <div className="text-[9px] opacity-60 hidden lg:block">
-                        {new Date(dateStr(d)).toLocaleDateString("en", {
+                        {new Date(dateString).toLocaleDateString("en", {
                           weekday: "short",
                         })}
                       </div>
                     </th>
                   ))}
 
-                  <th className="table-th text-emerald   text-center text-[12px]">
+                  <th className="table-th text-emerald    text-center text-[12px]">
                     P
                   </th>
                   <th className="table-th text-yellow-400 text-center text-[12px]">
                     L
                   </th>
-                  <th className="table-th text-red-400   text-center text-[12px]">
+                  <th className="table-th text-red-400    text-center text-[12px]">
                     A
                   </th>
-                  <th className="table-th text-blue-400  text-center text-[12px]">
+                  <th className="table-th text-blue-400   text-center text-[12px]">
                     HD
                   </th>
-                  <th className="table-th text-amber text-center text-[12px]">
+                  <th className="table-th text-amber      text-center text-[12px]">
                     hl
                   </th>
-                  {/* <th className="table-th text-slate-400  text-center text-[12px]">
-                    we
-                  </th> */}
                 </tr>
               </thead>
 
               <tbody>
                 {employees.map((emp) => {
                   const s = emp.summary;
-
                   return (
                     <tr key={emp.employee_id} className="table-row-hover">
                       {/* Employee info */}
@@ -516,23 +511,20 @@ const AttendanceRegister = () => {
                       </td>
 
                       {/* Day cells */}
-                      {days.map((d) => {
-                        const record = getDayRecord(emp, d);
-                        const cell = getCellStyle(emp, d);
+                      {days.map((dateString) => {
+                        const record = getDayRecord(emp, dateString);
+                        const cell = getCellStyle(emp, dateString);
                         const isEditing =
                           editingCell?.empId === emp.employee_id &&
-                          editingCell?.day === d;
-                        const weekend = isWeekend(d);
+                          editingCell?.dateString === dateString;
+                        const weekend = isWeekend(dateString);
 
                         return (
                           <td
-                            key={d}
-                            className={`table-td text-center px-1 ${
-                              weekend ? "bg-red-500/15" : ""
-                            }`}
+                            key={dateString}
+                            className={`table-td text-center px-1 ${weekend ? "bg-red-500/15" : ""}`}
                           >
                             {isEditing ? (
-                              /* ── Edit mode ── */
                               <div className="flex items-center gap-0.5 justify-center">
                                 <select
                                   value={editingCell.status || ""}
@@ -553,12 +545,11 @@ const AttendanceRegister = () => {
                                   <option value="Leave">LV</option>
                                 </select>
 
-                                {/* ✔ Confirm button */}
                                 <button
                                   onClick={() =>
                                     handleStatusUpdate(
                                       emp.employee_id,
-                                      d,
+                                      dateString,
                                       editingCell.status,
                                       editingCell.recordId,
                                     )
@@ -567,13 +558,11 @@ const AttendanceRegister = () => {
                                   title="Save"
                                   className="flex items-center justify-center w-5 h-5 hover:bg-emerald/20 rounded transition-colors"
                                 >
-                                  {/* SVG checkmark — no external icon dependency */}
                                   <svg
                                     width="10"
                                     height="10"
                                     viewBox="0 0 12 12"
                                     fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
                                     className="text-emerald"
                                   >
                                     <path
@@ -586,19 +575,16 @@ const AttendanceRegister = () => {
                                   </svg>
                                 </button>
 
-                                {/* ✕ Cancel button */}
                                 <button
                                   onClick={() => setEditingCell(null)}
                                   title="Cancel"
                                   className="flex items-center justify-center w-5 h-5 hover:bg-red-500/20 rounded transition-colors"
                                 >
-                                  {/* SVG X — no external icon dependency */}
                                   <svg
                                     width="10"
                                     height="10"
                                     viewBox="0 0 12 12"
                                     fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
                                     className="text-red-400"
                                   >
                                     <path
@@ -611,13 +597,12 @@ const AttendanceRegister = () => {
                                 </button>
                               </div>
                             ) : (
-                              /* ── Display mode ── */
                               <span
                                 onClick={() =>
                                   !weekend &&
                                   handleCellEdit(
                                     emp.employee_id,
-                                    d,
+                                    dateString,
                                     record?.status || "",
                                     record?.id || null,
                                   )
@@ -650,9 +635,6 @@ const AttendanceRegister = () => {
                       <td className="table-td text-center text-amber      font-bold text-[12px]">
                         {s.holiday ?? 0}
                       </td>
-                      {/* <td className="table-td text-center text-slate-400  font-bold text-[12px]">
-                        {s.weekends ?? 0}
-                      </td> */}
                     </tr>
                   );
                 })}
