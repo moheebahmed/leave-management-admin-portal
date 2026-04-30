@@ -81,7 +81,7 @@ const AttendanceRegister = () => {
     }
   };
 
-   // ─── CORE FIX ───────────────────────────────────────────────────────────────
+  // ─── CORE FIX ───────────────────────────────────────────────────────────────
   // Payroll cycle is ALWAYS cross-month:
   //   startDay of current month  →  endDay of next month
   // Returns full ISO date strings ["2026-01-14", ..., "2026-02-15"] so that
@@ -120,48 +120,48 @@ const AttendanceRegister = () => {
   const getDayRecord = (employee, dateString) =>
     employee.daily_records?.find((r) => r.date === dateString) || null;
 
-const LEAVE_TYPE_LABELS = {
-  "Annual Leaves": "AL",
-  "Casual Leaves": "CL",
-  "Half Journey Leave": "HJL",
-  "Paid Leave": "PL",
-  "Sick Leave": "SL",
-  "Leave": "LV",
-};
+  const LEAVE_TYPE_LABELS = {
+    "Annual Leaves": "AL",
+    "Casual Leaves": "CL",
+    "Half Journey Leave": "HJL",
+    "Paid Leave": "PL",
+    "Sick Leave": "SL",
+    Leave: "LV",
+  };
 
-const getCellStyle = (employee, dateString) => {
-  if (isWeekend(dateString))
-    return { bg: "bg-slate-700/30", text: "text-slate-500", label: "WE" };
+  const getCellStyle = (employee, dateString) => {
+    if (isWeekend(dateString))
+      return { bg: "bg-slate-700/30", text: "text-slate-500", label: "WE" };
 
-  const record = getDayRecord(employee, dateString);
-  const status = record?.status;
-  const leaveType = record?.leave_type;
+    const record = getDayRecord(employee, dateString);
+    const status = record?.status;
+    const leaveType = record?.leave_type;
 
-  // ── Leave types check (status ya leave_type dono check karo) ──
-  const leaveKey = leaveType || status;
-  if (leaveKey && LEAVE_TYPE_LABELS[leaveKey]) {
-    return {
-      bg: "bg-purple-500/15",
-      text: "text-purple-400",
-      label: LEAVE_TYPE_LABELS[leaveKey],
-    };
-  }
+    // ── Leave types check (status ya leave_type dono check karo) ──
+    const leaveKey = leaveType || status;
+    if (leaveKey && LEAVE_TYPE_LABELS[leaveKey]) {
+      return {
+        bg: "bg-purple-500/15",
+        text: "text-purple-400",
+        label: LEAVE_TYPE_LABELS[leaveKey],
+      };
+    }
 
-  switch (status) {
-    case "Present":
-      return { bg: "bg-emerald/15", text: "text-emerald", label: "P" };
-    case "Late":
-      return { bg: "bg-yellow-500/15", text: "text-yellow-400", label: "L" };
-    case "Absent":
-      return { bg: "bg-red-500/10", text: "text-red-400", label: "A" };
-    case "Half Day":
-      return { bg: "bg-blue-500/15", text: "text-blue-400", label: "HD" };
-    case "Holiday":
-      return { bg: "bg-amber/15", text: "text-amber", label: "H" };
-    default:
-      return { bg: "bg-slate-800/30", text: "text-slate-600", label: "—" };
-  }
-};
+    switch (status) {
+      case "Present":
+        return { bg: "bg-emerald/15", text: "text-emerald", label: "P" };
+      case "Late":
+        return { bg: "bg-yellow-500/15", text: "text-yellow-400", label: "L" };
+      case "Absent":
+        return { bg: "bg-red-500/10", text: "text-red-400", label: "A" };
+      case "Half Day":
+        return { bg: "bg-blue-500/15", text: "text-blue-400", label: "HD" };
+      case "Holiday":
+        return { bg: "bg-amber/15", text: "text-amber", label: "H" };
+      default:
+        return { bg: "bg-slate-800/30", text: "text-slate-600", label: "—" };
+    }
+  };
 
   const prevMonth = () => {
     if (month === 0) {
