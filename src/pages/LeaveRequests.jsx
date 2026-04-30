@@ -333,13 +333,13 @@ const LeaveRequests = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          {/* <button
             className="btn-primary self-start sm:self-auto"
             onClick={() => navigate('/create-leave-request')}
           >
             <Plus size={14} />
             Create Request
-          </button>
+          </button> */}
           {selectedRows.length > 0 && (
             <button
               className="btn-ghost hover:!bg-danger/10 hover:!text-danger"
