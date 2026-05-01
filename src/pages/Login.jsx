@@ -1,57 +1,57 @@
-import { useState } from 'react'
-import axios from 'axios'
-import { API_BASE_URL } from '../api/config'
-import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff } from 'lucide-react'
+import { useState } from "react";
+import axios from "axios";
+import { API_BASE_URL } from "../api/config";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError("");
 
     if (!email || !password) {
-      setError('Please fill in all fields')
-      return
+      setError("Please fill in all fields");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         email,
-        password
-      })
+        password,
+      });
 
-      const { token, user } = response.data.data
+      const { token, user } = response.data.data;
 
-      if (user.role !== 'HR') {
-        setError('Access denied. Only HR accounts can login to this portal.')
-        return
+      if (user.role !== "HR") {
+        setError("Access denied. Only HR accounts can login to this portal.");
+        return;
       }
 
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user))
-      localStorage.setItem('isAuthenticated', 'true')
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("isAuthenticated", "true");
 
-      window.dispatchEvent(new Event('auth-change'))
+      window.dispatchEvent(new Event("auth-change"));
 
-      navigate('/', { replace: true })
-
+      navigate("/", { replace: true });
     } catch (err) {
-      const message = err.response?.data?.message || 'Server error. Please try again.'
-      setError(message)
-      console.error('Login error:', err)
+      const message =
+        err.response?.data?.message || "Server error. Please try again.";
+      setError(message);
+      console.error("Login error:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -81,7 +81,8 @@ const Login = () => {
             </div>
           </div>
           <p className="text-slate-400 text-lg max-w-md mx-auto">
-            Streamline your HR operations with our comprehensive leave management system
+            Streamline your HR operations with our comprehensive leave
+            management system
           </p>
         </div>
 
@@ -94,12 +95,12 @@ const Login = () => {
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-4">
-         <div className="w-15 h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
-          <img
-                src="/logo.png"
-                alt="logo"
-                className="w-full h-full object-contain"
-              />
+              <div className="w-15 h-14 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src="/logo.png"
+                  alt="logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="text-left">
                 <div className="font-syne font-bold text-2xl text-white leading-tight">
@@ -149,7 +150,7 @@ const Login = () => {
             <div>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
@@ -176,8 +177,8 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              style={{ color: '#ffffff', fontWeight: 700 }}
-              className={`btn-primary w-full justify-center py-3 text-base disabled:cursor-not-allowed ${loading ? 'bg-accent/60 hover:bg-accent/60 shadow-none' : ''}`}
+              style={{ color: "#ffffff", fontWeight: 700 }}
+              className={`btn-primary w-full justify-center py-3 text-base disabled:cursor-not-allowed ${loading ? "bg-accent/60 hover:bg-accent/60 shadow-none" : ""}`}
             >
               {loading ? (
                 <>
@@ -185,7 +186,7 @@ const Login = () => {
                   Logging in...
                 </>
               ) : (
-                'Login'
+                "Login"
               )}
             </button>
 
@@ -201,7 +202,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;

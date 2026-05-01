@@ -183,15 +183,15 @@ const Navbar = ({ toggleSidebar }) => {
           </div>
         )}
 
-        {/* Right side icons */}
+   
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
-          {/* Desktop search */}
-          <div className="hidden sm:flex items-center gap-2 bg-card/60 border border-border rounded-lg px-3 py-1.5 text-xs text-slate-500 cursor-pointer hover:border-border-bright transition-colors">
+ 
+          {/* <div className="hidden sm:flex items-center gap-2 bg-card/60 border border-border rounded-lg px-3 py-1.5 text-xs text-slate-500 cursor-pointer hover:border-border-bright transition-colors">
             <Search size={12} />
             <span className="hidden md:inline">Quick search…</span>
             <span className="ml-1 text-[10px] bg-border px-1.5 py-0.5 rounded text-slate-600">⌘K</span>
-          </div>
+          </div> */}
 
           {/* Mobile search icon */}
           {!showMobileSearch && (

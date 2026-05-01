@@ -6,6 +6,7 @@ const BADGE_STYLES = {
   green: 'bg-emerald/10 text-emerald',
   red: 'bg-danger/10 text-danger',
   gray: 'bg-slate-700/40 text-slate-400',
+  white: 'bg-slate-700/40 text-white',
 }
 
 const DEPT_COLOR_MAP = {

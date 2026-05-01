@@ -18,9 +18,10 @@ import { TableWrapper, EmptyState } from "../components/Table";
 import Avatar from "../components/Avatar";
 
 // ─── Status Badge ────────────────────────────────────────────────────────────
-const StatusBadge = ({ status, onStatusChange, isLeadApproval }) => {
+const StatusBadge = ({ status, onStatusChange, isLeadApproval, request, leaveBalances }) => {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [balanceError, setBalanceError] = useState("");
 
   const colors = {
     APPROVED: "bg-emerald/10 text-emerald border-emerald/20",
@@ -67,6 +68,38 @@ const StatusBadge = ({ status, onStatusChange, isLeadApproval }) => {
       >
         {allStatuses.map((s) => {
           const isDisabled = s === "APPROVED" && !isLeadApproval;
+          
+          // Check balance for APPROVED status
+          let hasInsufficientBalance = false;
+          let balanceInfo = null;
+          
+          if (s === "APPROVED" && leaveBalances && request) {
+            console.log("Checking balance for request:", request.Employee?.id, request.LeaveType?.id, request.total_days);
+            console.log("Available balances:", leaveBalances);
+            
+            const employeeBalance = leaveBalances.find(
+              (b) => b.empId === request.Employee?.id
+            );
+            
+            console.log("Employee balance found:", employeeBalance);
+            
+            if (employeeBalance && employeeBalance.balances) {
+              const leaveTypeBalance = employeeBalance.balances.find(
+                (b) => b.LeaveType?.id === request.LeaveType?.id || b.leave_type_id === request.LeaveType?.id
+              );
+              
+              console.log("Leave type balance found:", leaveTypeBalance);
+              
+              if (leaveTypeBalance) {
+                balanceInfo = leaveTypeBalance;
+                const remaining = leaveTypeBalance.remaining || (leaveTypeBalance.total_allowed - leaveTypeBalance.used);
+                console.log("Remaining balance:", remaining, "Requested days:", request.total_days);
+                if (remaining < request.total_days) {
+                  hasInsufficientBalance = true;
+                }
+              }
+            }
+          }
 
           return (
             <div
@@ -74,22 +107,28 @@ const StatusBadge = ({ status, onStatusChange, isLeadApproval }) => {
               className={`text-xs px-3 py-2 flex items-center gap-2 transition-colors ${colors[s]} 
                 ${s === status ? "opacity-100 font-semibold" : "opacity-70"}
                 ${
-                  isDisabled
+                  isDisabled || hasInsufficientBalance
                     ? "opacity-30 cursor-not-allowed"
                     : "cursor-pointer hover:bg-white/5"
                 }`}
               onClick={(e) => {
                 e.stopPropagation();
-                if (isDisabled) return;
+                if (isDisabled || hasInsufficientBalance) return;
                 if (s !== status) onStatusChange(s);
                 setOpen(false);
               }}
+              title={hasInsufficientBalance ? `Insufficient balance: ${balanceInfo?.remaining || (balanceInfo?.total_allowed - balanceInfo?.used)} remaining, ${request.total_days} requested` : isDisabled ? "Lead approval required" : ""}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
               <span className="flex-1">{s}</span>
               {isDisabled && (
                 <span className="text-[9px] text-yellow-500 font-medium">
                   Lead required
+                </span>
+              )}
+              {hasInsufficientBalance && (
+                <span className="text-[9px] text-danger font-medium">
+                  No balance
                 </span>
               )}
             </div>
@@ -101,9 +140,10 @@ const StatusBadge = ({ status, onStatusChange, isLeadApproval }) => {
 };
 
 // ─── Feedback Modal ───────────────────────────────────────────────────────────
-const FeedbackModal = ({ request, onClose, onSave }) => {
+const FeedbackModal = ({ request, onClose, onSave, leaveBalances }) => {
   const [feedback, setFeedback] = useState(request?.feedback || "");
   const [saving, setSaving] = useState(false);
+  const [balanceError, setBalanceError] = useState("");
 
   useEffect(() => {
     const scrollbarWidth =
@@ -118,6 +158,31 @@ const FeedbackModal = ({ request, onClose, onSave }) => {
 
   const handleSave = async (status) => {
     setSaving(true);
+    
+    // Check leave balance if approving
+    if (status === "APPROVED" && leaveBalances) {
+      const employeeBalance = leaveBalances.find(
+        (b) => b.empId === request.Employee?.id
+      );
+      
+      if (employeeBalance && employeeBalance.balances) {
+        const leaveTypeBalance = employeeBalance.balances.find(
+          (b) => b.LeaveType?.id === request.LeaveType?.id || b.leave_type_id === request.LeaveType?.id
+        );
+        
+        if (leaveTypeBalance) {
+          const remaining = leaveTypeBalance.remaining || (leaveTypeBalance.total_allowed - leaveTypeBalance.used);
+          if (remaining < request.total_days) {
+            setBalanceError(
+              `Insufficient balance! Employee has ${remaining} days remaining but requesting ${request.total_days} days.`
+            );
+            setSaving(false);
+            return;
+          }
+        }
+      }
+    }
+    
     await onSave(request.id, { feedback, status });
     setSaving(false);
     onClose();
@@ -186,6 +251,13 @@ const FeedbackModal = ({ request, onClose, onSave }) => {
           </div>
         </div>
 
+        {/* Balance Error Alert */}
+        {balanceError && (
+          <div className="bg-danger/10 border border-danger/30 rounded-lg p-3">
+            <p className="text-xs text-danger font-medium">{balanceError}</p>
+          </div>
+        )}
+
         {/* Feedback Input */}
         <div className="space-y-2">
           <label className="text-xs text-slate-400 font-medium">Feedback</label>
@@ -210,11 +282,11 @@ const FeedbackModal = ({ request, onClose, onSave }) => {
 
           <button
             onClick={() => handleSave("APPROVED")}
-            disabled={saving}
-            className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            disabled={saving || !!balanceError}
+            className="flex items-center gap-2 bg-accent hover:bg-accent/90 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save size={13} className="text-white" />
-            {saving ? "Saving..." : "APPROVED"}
+            {saving ? "Saving..." : (balanceError ? "Cannot Approve" : "APPROVED")}
           </button>
         </div>
       </div>
@@ -232,10 +304,50 @@ const LeaveRequests = () => {
   const [search, setSearch] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
   const [modalRequest, setModalRequest] = useState(null);
+  const [leaveBalances, setLeaveBalances] = useState([]);
 
   useEffect(() => {
     fetchLeaveRequests();
+    fetchLeaveBalances();
   }, []);
+
+  const fetchLeaveBalances = async () => {
+    try {
+      const empRes = await axios.get(`${API_BASE_URL}/hr/employees`, {
+        headers: getAuthHeaders(),
+      });
+      const employees = empRes.data.data.employees;
+
+      const grouped = [];
+
+      await Promise.all(
+        employees.map(async (emp) => {
+          try {
+            const balRes = await axios.get(
+              `${API_BASE_URL}/hr/employees/${emp.id}/balances`,
+              { headers: getAuthHeaders() },
+            );
+            const balances = balRes.data.data.balances;
+
+            if (balances.length > 0) {
+              grouped.push({
+                empId: emp.id,
+                employeeName: emp.full_name,
+                balances: balances,
+              });
+            }
+          } catch (error) {
+            console.log("Error fetching balance for employee:", emp.id, error);
+          }
+        }),
+      );
+
+      console.log("Leave Balances Fetched:", grouped);
+      setLeaveBalances(grouped);
+    } catch (error) {
+      console.log("Error fetching balances:", error);
+    }
+  };
 
   const fetchLeaveRequests = async () => {
     try {
@@ -292,6 +404,12 @@ const LeaveRequests = () => {
       setRequests((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
       );
+      
+      // Refresh leave balances after status change
+      if (newStatus === "APPROVED" || newStatus === "REJECTED") {
+        await fetchLeaveBalances();
+      }
+      
       showToast(`Status updated to ${newStatus}`);
     } catch (error) {
       showToast(error.response?.data?.message || "Failed to update status");
@@ -317,6 +435,12 @@ const LeaveRequests = () => {
           r.id === id ? { ...r, feedback, ...(status && { status }) } : r,
         ),
       );
+      
+      // Refresh leave balances after status change
+      if (status === "APPROVED" || status === "REJECTED") {
+        await fetchLeaveBalances();
+      }
+      
       showToast("Saved successfully ");
     } catch (error) {
       showToast(error.response?.data?.message || "Failed to save");
@@ -354,6 +478,7 @@ const LeaveRequests = () => {
           request={modalRequest}
           onClose={() => setModalRequest(null)}
           onSave={handleFeedbackSave}
+          leaveBalances={leaveBalances}
         />
       )}
 
@@ -421,9 +546,9 @@ const LeaveRequests = () => {
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
                   Employee
                 </th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
-                  ID
-                </th>
+                {/* <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
+                  IDwwwww
+                </th> */}
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
                   Leave Type
                 </th>
@@ -478,7 +603,7 @@ const LeaveRequests = () => {
                         <div className="flex items-center gap-2.5">
                           <Avatar
                             name={req.Employee?.full_name || "Unknown"}
-                            index={groupIndex}
+                            index={req.Employee?.id}
                             size="sm"
                           />
                           <span className="font-medium text-slate-200 text-[13.5px] whitespace-nowrap">
@@ -496,11 +621,11 @@ const LeaveRequests = () => {
                     )}
 
                     {/* ID */}
-                    <td className="table-td">
+                    {/* <td className="table-td">
                       <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
                         {req.id}
                       </span>
-                    </td>
+                    </td> */}
 
                     {/* Leave Type */}
                     <td className="table-td whitespace-nowrap">
@@ -543,6 +668,8 @@ const LeaveRequests = () => {
                       <StatusBadge
                         status={req.status}
                         isLeadApproval={req.isLeadApproval}
+                        request={req}
+                        leaveBalances={leaveBalances}
                         onStatusChange={(newStatus) =>
                           handleStatusChange(req.id, newStatus)
                         }

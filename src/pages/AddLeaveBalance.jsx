@@ -70,10 +70,29 @@ const AddLeaveBalance = () => {
               setLeaveForm(prefilled);
             })
             .catch(() => {});
+        } else {
+          // ✅ FIX: Employee select hone tak kuch auto-select nahi
+          setLeaveForm({});
         }
       })
       .catch(() => showToast("Failed to fetch leave types"));
   }, []);
+
+  // ✅ FIX: Employee select hone par leaves auto-select, clear hone par reset
+  const handleEmployeeChange = (empId) => {
+    setSelectedEmp(empId);
+    if (empId) {
+      const autoSelected = {};
+      leaveTypes.forEach((lt) => {
+        if (lt.max_allowed_leaves > 0) {
+          autoSelected[lt.id] = lt.max_allowed_leaves;
+        }
+      });
+      setLeaveForm(autoSelected);
+    } else {
+      setLeaveForm({});
+    }
+  };
 
   const toggleLeave = (id) => {
     setLeaveForm((prev) => {
@@ -82,7 +101,9 @@ const AddLeaveBalance = () => {
         delete updated[id];
         return updated;
       } else {
-        return { ...prev, [id]: "" };
+        const lt = leaveTypes.find((l) => l.id === id);
+        const autoValue = lt?.min_notice_days || "";
+        return { ...prev, [id]: autoValue };
       }
     });
   };
@@ -97,6 +118,21 @@ const AddLeaveBalance = () => {
     if (!selectedEmp) e2.emp = "Please select an employee";
     if (Object.keys(leaveForm).length === 0)
       e2.leaves = "Select at least one leave type";
+
+    Object.entries(leaveForm).forEach(([leave_type_id, total_allowed]) => {
+      const lt = leaveTypes.find((l) => l.id === Number(leave_type_id));
+      const value = Number(total_allowed);
+
+      if (!total_allowed || isNaN(value) || value <= 0) {
+        e2[`leave_${leave_type_id}`] = `${lt?.name} requires a valid number`;
+        return;
+      }
+
+      if (lt && lt.max_allowed_leaves > 0 && value > lt.max_allowed_leaves) {
+        e2[`leave_${leave_type_id}`] = `${lt.name} max is ${lt.max_allowed_leaves} days`;
+      }
+    });
+
     setErrors(e2);
     if (Object.keys(e2).length > 0) return;
 
@@ -179,7 +215,8 @@ const AddLeaveBalance = () => {
               <select
                 className={`form-input-base cursor-pointer ${errors.emp ? "!border-danger" : ""} ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
                 value={selectedEmp}
-                onChange={(e) => !isEdit && setSelectedEmp(e.target.value)}
+                // ✅ FIX: handleEmployeeChange call ho raha hai ab
+                onChange={(e) => !isEdit && handleEmployeeChange(e.target.value)}
                 disabled={isEdit}
               >
                 <option value="">Select an employee…</option>
@@ -208,60 +245,96 @@ const AddLeaveBalance = () => {
               <div className="space-y-2">
                 {leaveTypes.map((lt) => {
                   const isChecked = leaveForm[lt.id] !== undefined;
+                  const maxAllowed = lt.max_allowed_leaves || 0;
+                  const currentValue = leaveForm[lt.id] || "";
+                  const isExceeded =
+                    currentValue &&
+                    Number(currentValue) > maxAllowed &&
+                    maxAllowed > 0;
+
                   return (
-                    <div
-                      key={lt.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer
-                        ${
-                          isChecked
-                            ? "border-accent/40 bg-accent/5"
-                            : "border-border bg-surface/40 hover:border-slate-600"
-                        }`}
-                      onClick={() => toggleLeave(lt.id)}
-                    >
-                      {/* Checkbox */}
+                    <div key={lt.id}>
                       <div
-                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all
-                        ${isChecked ? "bg-accent border-accent" : "border-slate-600"}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer
+                          ${
+                            isChecked
+                              ? "border-accent/40 bg-accent/5"
+                              : "border-border bg-surface/40 hover:border-slate-600"
+                          }`}
+                        onClick={() => toggleLeave(lt.id)}
                       >
-                        {isChecked && (
-                          <svg
-                            width="10"
-                            height="8"
-                            viewBox="0 0 10 8"
-                            fill="none"
+                        {/* Checkbox */}
+                        <div
+                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all
+                          ${isChecked ? "bg-accent border-accent" : "border-slate-600"}`}
+                        >
+                          {isChecked && (
+                            <svg
+                              width="10"
+                              height="8"
+                              viewBox="0 0 10 8"
+                              fill="none"
+                            >
+                              <path
+                                d="M1 4L3.5 6.5L9 1"
+                                stroke="white"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          )}
+                        </div>
+
+                        {/* Leave Name */}
+                        <div className="flex-1">
+                          <span
+                            className={`text-sm block ${isChecked ? "text-slate-200" : "text-slate-400"}`}
                           >
-                            <path
-                              d="M1 4L3.5 6.5L9 1"
-                              stroke="white"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                            {lt.name}
+                          </span>
+                          {maxAllowed > 0 && (
+                            <span className="text-xs text-slate-500">
+                              Max: {maxAllowed} days
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Days Input */}
+                        {isChecked && (
+                          <div className="flex flex-col items-end gap-1">
+                            <input
+                              type="number"
+                              min="1"
+                              max={maxAllowed > 0 ? maxAllowed : "365"}
+                              placeholder="Days"
+                              value={currentValue}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (
+                                  maxAllowed > 0 &&
+                                  Number(val) > maxAllowed
+                                ) {
+                                  setDays(lt.id, maxAllowed);
+                                } else {
+                                  setDays(lt.id, val);
+                                }
+                              }}
+                              className={`w-20 text-xs text-center form-input-base py-1 ${
+                                isExceeded
+                                  ? "!border-danger focus:!ring-danger/10"
+                                  : ""
+                              }`}
                             />
-                          </svg>
+                            {isExceeded && (
+                              <span className="text-xs text-danger font-medium">
+                                Max {maxAllowed}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
-
-                      {/* Leave Name */}
-                      <span
-                        className={`text-sm flex-1 ${isChecked ? "text-slate-200" : "text-slate-400"}`}
-                      >
-                        {lt.name}
-                      </span>
-
-                      {/* Days Input */}
-                      {isChecked && (
-                        <input
-                          type="number"
-                          min="1"
-                          max="365"
-                          placeholder="Days"
-                          value={leaveForm[lt.id]}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => setDays(lt.id, e.target.value)}
-                          className="w-20 text-xs text-center form-input-base py-1"
-                        />
-                      )}
                     </div>
                   );
                 })}
@@ -325,16 +398,32 @@ const AddLeaveBalance = () => {
                     </div>
                     <div className="space-y-1">
                       {Object.entries(leaveForm).map(([id, days]) => {
-                        const lt = leaveTypes.find((l) => l.id === Number(id));
+                        const lt = leaveTypes.find(
+                          (l) => l.id === Number(id),
+                        );
+                        const maxAllowed = lt?.max_allowed_leaves || 0;
+                        const isExceeded =
+                          days &&
+                          Number(days) > maxAllowed &&
+                          maxAllowed > 0;
                         return (
                           <div
                             key={id}
                             className="flex justify-between text-xs"
                           >
                             <span className="text-slate-400">{lt?.name}</span>
-                            <span className="text-accent font-semibold">
-                              {days || "—"} days
-                            </span>
+                            <div className="flex flex-col items-end">
+                              <span
+                                className={`font-semibold ${isExceeded ? "text-danger" : "text-accent"}`}
+                              >
+                                {days || "—"} days
+                              </span>
+                              {maxAllowed > 0 && (
+                                <span className="text-[10px] text-slate-500">
+                                  (max {maxAllowed})
+                                </span>
+                              )}
+                            </div>
                           </div>
                         );
                       })}

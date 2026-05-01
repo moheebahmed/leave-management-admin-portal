@@ -18,14 +18,22 @@ export const LEAVE_TYPES = [
 ]
 
 export const AVATAR_COLORS = [
-  '#3b82f6',
-  '#8b5cf6',
-  '#06b6d4',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#ec4899',
-  '#14b8a6',
+  '#3b82f6', // blue
+  '#8b5cf6', // purple
+  '#06b6d4', // cyan
+  '#10b981', // green
+  '#f59e0b', // amber
+  '#ef4444', // red
+  '#ec4899', // pink
+  '#14b8a6', // teal
+  '#6366f1', // indigo
+  '#f97316', // orange
+  '#06b6d4', // sky
+  '#a855f7', // violet
+  '#0891b2', // cyan-dark
+  '#059669', // emerald
+  '#dc2626', // red-dark
+  '#7c3aed', // violet-dark
 ]
 
 export const INITIAL_EMPLOYEES = [
@@ -124,4 +132,15 @@ export const getInitials = (name) => {
     .slice(0, 2)
 }
 
-export const getAvatarColor = (index) => AVATAR_COLORS[index % AVATAR_COLORS.length]
+// Global map: empId -> color (sequential assignment, no collisions)
+const _colorMap = new Map()
+let _colorCounter = 0
+
+export const getAvatarColor = (indexOrId) => {
+  const key = String(indexOrId)
+  if (!_colorMap.has(key)) {
+    _colorMap.set(key, _colorCounter % AVATAR_COLORS.length)
+    _colorCounter++
+  }
+  return AVATAR_COLORS[_colorMap.get(key)]
+}

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { UserPlus, Pencil, Trash2, Search } from 'lucide-react'
+import { UserPlus, Pencil, Trash2, Search, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { API_BASE_URL, getAuthHeaders } from '../api/config'
@@ -97,6 +97,11 @@ const Employees = () => {
               placeholder="Search employees…"
               className="bg-transparent text-xs text-slate-200 placeholder-slate-600 outline-none w-40"
             />
+            {search && (
+              <button onClick={() => setSearch('')} className="text-slate-500 hover:text-slate-300 transition-colors">
+                <X size={12} />
+              </button>
+            )}
           </div>
         }
       >
@@ -131,7 +136,7 @@ const Employees = () => {
                   {/* Name + Email */}
                   <td className="table-td">
                     <div className="flex items-center gap-3">
-                      <Avatar name={emp.full_name} index={i} />
+                      <Avatar name={emp.full_name} index={emp.id} />
                       <div>
                         <div className="font-medium text-slate-200 text-[13.5px] whitespace-nowrap">{emp.full_name}</div>
                         <div className="text-xs text-slate-500 whitespace-nowrap">{emp.User?.email}</div>
