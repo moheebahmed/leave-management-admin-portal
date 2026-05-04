@@ -221,26 +221,6 @@ const LeaveTypes = () => {
                 )}
               </div>
 
-              {/* Allow Past Dates */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-                  Allow Past Dates <span className="text-danger">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  className={inputClass("allow_past_dates")}
-                  placeholder="e.g. 0"
-                  value={form.allow_past_dates}
-                  onChange={(e) => set("allow_past_dates", e.target.value)}
-                />
-                {errors.allow_past_dates && (
-                  <p className="text-xs text-danger">
-                    {errors.allow_past_dates}
-                  </p>
-                )}
-              </div>
-
               {/* Max Leaves Limit */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-500 tracking-wide">
@@ -299,9 +279,7 @@ const LeaveTypes = () => {
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
                   Min Notice Days
                 </th>
-                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
-                  Allow Past Dates
-                </th>
+
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
                   Max Leaves Limit
                 </th>
@@ -332,9 +310,7 @@ const LeaveTypes = () => {
                   <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {lt.min_notice_days} days
                   </td>
-                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
-                    {Number(lt.allow_past_dates)}
-                  </td>
+
                   <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
                     {lt.max_allowed_leaves}
                   </td>
