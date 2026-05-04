@@ -47,7 +47,7 @@ const Dashboard = () => {
       ]);
 
       setEmployees(employeesRes.data.data.employees || []);
-      
+
       const allRequests = requestsRes.data.data.requests || [];
       const pending = allRequests.filter((r) => r.status === "PENDING");
       setPendingRequests(pending);
@@ -220,7 +220,7 @@ const Dashboard = () => {
             <div className="font-syne text-2xl font-bold text-accent">
               {employees.length}
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">Total headcount</div>
+            <div className="text-xs text-slate-500 mt-0.5">Total Employees</div>
           </div>
         </div>
       </div>

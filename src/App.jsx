@@ -1,58 +1,58 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import DashboardLayout from './layouts/DashboardLayout'
-import Dashboard from './pages/Dashboard'
-import Employees from './pages/Employees'
-import AddEmployee from './pages/AddEmployee'
-import Departments from './pages/Departments'
-import AddDepartment from './pages/AddDepartment'
-import LeaveRequests from './pages/LeaveRequests'
-import LeaveBalance from './pages/LeaveBalance'
-import AddLeaveBalance from './pages/AddLeaveBalance'
-import LeaveTypes from './pages/LeaveTypes'
-import Login from './pages/Login'
-import Notifications from './pages/Notifications'
-import CreateLeaveRequest from './pages/CreateLeaveRequest'
-import ProtectedRoute from './components/ProtectedRoute'
-import AttendanceUpload from './pages/AttendanceUpload'
-import AttendanceRecords from './pages/AttendanceRecords'
-import AttendanceRegister from './pages/AttendanceRegister'
-import Payroll from './pages/Payroll'
-import PayrollSettings from './pages/PayrollSettings'
-import Shifts from './pages/Shifts'
-import Holidays from './pages/Holidays'
+import { useState, useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import DashboardLayout from "./layouts/DashboardLayout";
+import Dashboard from "./pages/Dashboard";
+import Employees from "./pages/Employees";
+import AddEmployee from "./pages/AddEmployee";
+import Departments from "./pages/Departments";
+import AddDepartment from "./pages/AddDepartment";
+import LeaveRequests from "./pages/LeaveRequests";
+import LeaveBalance from "./pages/LeaveBalance";
+import AddLeaveBalance from "./pages/AddLeaveBalance";
+import LeaveTypes from "./pages/LeaveTypes";
+import Login from "./pages/Login";
+import Notifications from "./pages/Notifications";
+import CreateLeaveRequest from "./pages/CreateLeaveRequest";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AttendanceUpload from "./pages/AttendanceUpload";
+import AttendanceRecords from "./pages/AttendanceRecords";
+import AttendanceRegister from "./pages/AttendanceRegister";
+import Payroll from "./pages/Payroll";
+import PayrollSettings from "./pages/PayrollSettings";
+import Shifts from "./pages/Shifts";
+import Holidays from "./pages/Holidays";
 // import Roster from './pages/Roster'
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem('isAuthenticated') === 'true'
-  )
+    localStorage.getItem("isAuthenticated") === "true",
+  );
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setIsAuthenticated(localStorage.getItem('isAuthenticated') === 'true')
-    }
+      setIsAuthenticated(localStorage.getItem("isAuthenticated") === "true");
+    };
 
-    window.addEventListener('storage', handleStorageChange)
-    window.addEventListener('auth-change', handleStorageChange)
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("auth-change", handleStorageChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener('auth-change', handleStorageChange)
-    }
-  }, [])
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("auth-change", handleStorageChange);
+    };
+  }, []);
 
   return (
     <Routes>
       {/* Login Route */}
-      <Route 
-        path="/login" 
-        element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} 
+      <Route
+        path="/login"
+        element={isAuthenticated ? <Navigate to="/" replace /> : <Login />}
       />
 
       {/* Protected Routes */}
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           <ProtectedRoute>
             <DashboardLayout />
@@ -86,7 +86,7 @@ const App = () => {
       {/* Catch all - redirect to login */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
-  )
-}
+  );
+};
 
-export default App
+export default App;

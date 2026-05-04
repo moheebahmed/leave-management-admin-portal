@@ -73,9 +73,7 @@ const Payroll = () => {
   const [search, setSearch] = useState("");
   const [records, setRecords] = useState(DUMMY_PAYROLL);
   const [generating, setGenerating] = useState(false);
-  const [payrollMonth, setPayrollMonth] = useState(
-    new Date().getMonth() + 1
-  );
+  const [payrollMonth, setPayrollMonth] = useState(new Date().getMonth() + 1);
   const [payrollYear, setPayrollYear] = useState(new Date().getFullYear());
 
   // Load payroll settings from API
@@ -123,7 +121,7 @@ const Payroll = () => {
     try {
       const headers = getAuthHeaders();
       const settings = JSON.parse(
-        localStorage.getItem("payroll_settings") || "{}"
+        localStorage.getItem("payroll_settings") || "{}",
       );
 
       const res = await fetch(`${API_BASE_URL}/payroll/generate`, {

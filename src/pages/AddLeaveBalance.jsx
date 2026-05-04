@@ -129,7 +129,8 @@ const AddLeaveBalance = () => {
       }
 
       if (lt && lt.max_allowed_leaves > 0 && value > lt.max_allowed_leaves) {
-        e2[`leave_${leave_type_id}`] = `${lt.name} max is ${lt.max_allowed_leaves} days`;
+        e2[`leave_${leave_type_id}`] =
+          `${lt.name} max is ${lt.max_allowed_leaves} days`;
       }
     });
 
@@ -216,7 +217,9 @@ const AddLeaveBalance = () => {
                 className={`form-input-base cursor-pointer ${errors.emp ? "!border-danger" : ""} ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
                 value={selectedEmp}
                 // ✅ FIX: handleEmployeeChange call ho raha hai ab
-                onChange={(e) => !isEdit && handleEmployeeChange(e.target.value)}
+                onChange={(e) =>
+                  !isEdit && handleEmployeeChange(e.target.value)
+                }
                 disabled={isEdit}
               >
                 <option value="">Select an employee…</option>
@@ -398,14 +401,10 @@ const AddLeaveBalance = () => {
                     </div>
                     <div className="space-y-1">
                       {Object.entries(leaveForm).map(([id, days]) => {
-                        const lt = leaveTypes.find(
-                          (l) => l.id === Number(id),
-                        );
+                        const lt = leaveTypes.find((l) => l.id === Number(id));
                         const maxAllowed = lt?.max_allowed_leaves || 0;
                         const isExceeded =
-                          days &&
-                          Number(days) > maxAllowed &&
-                          maxAllowed > 0;
+                          days && Number(days) > maxAllowed && maxAllowed > 0;
                         return (
                           <div
                             key={id}
