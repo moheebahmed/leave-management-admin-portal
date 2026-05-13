@@ -1,41 +1,37 @@
 import { useState, useEffect } from "react";
-import { Tag, Pencil, Trash2, Plus, X, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, BarChart2, X, Check } from "lucide-react";
 import axios from "axios";
 import { API_BASE_URL, getAuthHeaders } from "../api/config";
-import { useApp } from "../layouts/DashboardLayout";
 import { TableWrapper, EmptyState } from "../components/Table";
+import { useApp } from "../layouts/DashboardLayout";
+import ConfirmModal from "../components/ConfirmModal";
 
-const INITIAL_FORM = {
-  name: "",
-  code: "",
-  min_notice_days: "",
-  allow_past_dates: "",
-  max_allowed_leaves: "",
-};
+const INITIAL_FORM = { grade_name: "", grade_code: "", level: "" };
 
-const LeaveTypes = () => {
+const Grades = () => {
   const { showToast } = useApp();
-  const [leaveTypes, setLeaveTypes] = useState([]);
+  const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
-    fetchLeaveTypes();
+    fetchGrades();
   }, []);
 
-  const fetchLeaveTypes = async () => {
+  const fetchGrades = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/employees/leave/types`, {
+      const res = await axios.get(`${API_BASE_URL}/grades`, {
         headers: getAuthHeaders(),
       });
-      setLeaveTypes(res.data.data.leave_types || []);
+      setGrades(res.data.data || res.data || []);
     } catch {
-      showToast("Failed to fetch leave types");
+      showToast("Failed to fetch grades");
     } finally {
       setLoading(false);
     }
@@ -48,12 +44,10 @@ const LeaveTypes = () => {
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.code.trim()) e.code = "Code is required";
-    if (form.min_notice_days === "" || isNaN(form.min_notice_days))
-      e.min_notice_days = "Min Days is Required";
-    if (form.max_allowed_leaves === "" || isNaN(form.max_allowed_leaves))
-      e.max_allowed_leaves = "Maximum Leaves is Required";
+    if (!form.grade_name.trim()) e.grade_name = "Grade name is required";
+    if (!form.grade_code.trim()) e.grade_code = "Grade code is required";
+    if (form.level === "" || isNaN(form.level))
+      e.level = "Level is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -64,55 +58,58 @@ const LeaveTypes = () => {
     setSaving(true);
     try {
       const payload = {
-        name: form.name,
-        code: form.code,
-        min_notice_days: Number(form.min_notice_days),
-        allow_past_dates: Number(form.allow_past_dates) || 0,
-        max_allowed_leaves: Number(form.max_allowed_leaves),
+        grade_name: form.grade_name,
+        grade_code: form.grade_code,
+        level: Number(form.level),
       };
       if (editId) {
-        await axios.put(`${API_BASE_URL}/hr/leave/types/${editId}`, payload, {
+        await axios.put(`${API_BASE_URL}/grades/${editId}`, payload, {
           headers: getAuthHeaders(),
         });
-        showToast("Leave type updated!");
+        showToast("Grade updated!");
       } else {
-        await axios.post(`${API_BASE_URL}/hr/leave/types`, payload, {
+        await axios.post(`${API_BASE_URL}/grades`, payload, {
           headers: getAuthHeaders(),
         });
-        showToast("Leave type added!");
+        showToast("Grade added!");
       }
-      await fetchLeaveTypes();
+      await fetchGrades();
       setForm(INITIAL_FORM);
       setEditId(null);
       setShowForm(false);
     } catch (error) {
-      showToast(error.response?.data?.message || "Failed to save leave type");
+      showToast(error.response?.data?.message || "Failed to save grade");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleEdit = (lt) => {
+  const handleEdit = (g) => {
     setForm({
-      name: lt.name,
-      code: lt.code,
-      min_notice_days: lt.min_notice_days,
-      allow_past_dates: lt.allow_past_dates,
-      max_allowed_leaves: lt.max_allowed_leaves,
+      grade_name: g.grade_name,
+      grade_code: g.grade_code,
+      level: g.level,
     });
-    setEditId(lt.id);
+    setEditId(g.id);
     setShowForm(true);
+    setErrors({});
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id, name) => {
+    setDeleteTarget({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    const { id } = deleteTarget;
+    setDeleteTarget(null);
     try {
-      await axios.delete(`${API_BASE_URL}/hr/leave/types/${id}`, {
+      await axios.delete(`${API_BASE_URL}/grades/${id}`, {
         headers: getAuthHeaders(),
       });
-      setLeaveTypes((prev) => prev.filter((lt) => lt.id !== id));
-      showToast("Leave type deleted.");
+      setGrades((prev) => prev.filter((g) => g.id !== id));
+      showToast("Grade deleted.");
     } catch {
-      showToast("Failed to delete leave type");
+      showToast("Failed to delete grade");
     }
   };
 
@@ -132,11 +129,11 @@ const LeaveTypes = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="page-title">
-            <span className="text-accent font-bold">Leave</span>{" "}
-            <span className="text-white font-bold">Types</span>
+            <span className="text-accent font-bold">Employee</span>{" "}
+            <span className="text-white font-bold">Grades</span>
           </h2>
           <p className="page-subtitle font-semibold text-[rgb(173,173,173)]">
-            {leaveTypes.length} types configured
+            {grades.length} grades configured
           </p>
         </div>
         {!showForm && (
@@ -145,7 +142,7 @@ const LeaveTypes = () => {
             onClick={() => setShowForm(true)}
           >
             <Plus size={14} />
-            Add Leave Type
+            Add Grade
           </button>
         )}
       </div>
@@ -155,7 +152,7 @@ const LeaveTypes = () => {
         <div className="card-base p-5 max-w-2xl">
           <div className="flex items-center justify-between mb-4">
             <h3 className="section-title">
-              {editId ? "Edit Leave Type" : "New Leave Type"}
+              {editId ? "Edit Grade" : "New Grade"}
             </h3>
             <button
               onClick={handleCancel}
@@ -166,76 +163,56 @@ const LeaveTypes = () => {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Grade Name */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-                  Name <span className="text-danger">*</span>
+                  Grade Name <span className="text-danger">*</span>
                 </label>
                 <input
-                  className={inputClass("name")}
-                  placeholder="e.g. Annual Leave"
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
+                  className={inputClass("grade_name")}
+                  placeholder="e.g. Intern"
+                  value={form.grade_name}
+                  onChange={(e) => set("grade_name", e.target.value)}
                 />
-                {errors.name && (
-                  <p className="text-xs text-danger">{errors.name}</p>
+                {errors.grade_name && (
+                  <p className="text-xs text-danger">{errors.grade_name}</p>
                 )}
               </div>
 
-              {/* Code */}
+              {/* Grade Code */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-                  Code <span className="text-danger">*</span>
+                  Grade Code <span className="text-danger">*</span>
                 </label>
                 <input
-                  className={inputClass("code")}
-                  placeholder="e.g. AL"
-                  value={form.code}
-                  onChange={(e) => set("code", e.target.value.toUpperCase())}
+                  className={inputClass("grade_code")}
+                  placeholder="e.g. G1"
+                  value={form.grade_code}
+                  onChange={(e) =>
+                    set("grade_code", e.target.value.toUpperCase())
+                  }
                 />
-                {errors.code && (
-                  <p className="text-xs text-danger">{errors.code}</p>
+                {errors.grade_code && (
+                  <p className="text-xs text-danger">{errors.grade_code}</p>
                 )}
               </div>
 
-              {/* Min Notice Days */}
+              {/* Level */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-                  Min Notice Days <span className="text-danger">*</span>
+                  Level <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
-                  min="0"
-                  className={inputClass("min_notice_days")}
-                  placeholder="e.g. 2"
-                  value={form.min_notice_days}
-                  onChange={(e) => set("min_notice_days", e.target.value)}
+                  min="1"
+                  className={inputClass("level")}
+                  placeholder="e.g. 1"
+                  value={form.level}
+                  onChange={(e) => set("level", e.target.value)}
                 />
-                {errors.min_notice_days && (
-                  <p className="text-xs text-danger">
-                    {errors.min_notice_days}
-                  </p>
-                )}
-              </div>
-
-              {/* Max Leaves Limit */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-500 tracking-wide">
-                  Maximum Leaves Limit <span className="text-danger">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  className={inputClass("max_allowed_leaves")}
-                  placeholder="e.g. 20"
-                  value={form.max_allowed_leaves}
-                  onChange={(e) => set("max_allowed_leaves", e.target.value)}
-                />
-                {errors.max_allowed_leaves && (
-                  <p className="text-xs text-danger">
-                    {errors.max_allowed_leaves}
-                  </p>
+                {errors.level && (
+                  <p className="text-xs text-danger">{errors.level}</p>
                 )}
               </div>
             </div>
@@ -243,12 +220,11 @@ const LeaveTypes = () => {
             <div className="flex gap-3 mt-5">
               <button type="submit" className="btn-primary" disabled={saving}>
                 <Check size={14} />
-                {saving ? "Saving..." : editId ? "Update" : "Save Leave Type"}
+                {saving ? "Saving..." : editId ? "Update" : "Save Grade"}
               </button>
-
               <button
                 type="button"
-               className="flex-1 btn-outline flex justify-center items-center"
+             className="flex-1 btn-outline flex justify-center items-center"
                 onClick={handleCancel}
               >
                 Cancel
@@ -259,27 +235,23 @@ const LeaveTypes = () => {
       )}
 
       {/* Table */}
-      <TableWrapper title="All Leave Types">
+      <TableWrapper title="All Grades">
         {loading ? (
-          <EmptyState message="Loading leave types..." />
-        ) : leaveTypes.length === 0 ? (
-          <EmptyState message="No leave types yet. Add one to get started." />
+          <EmptyState message="Loading grades..." />
+        ) : grades.length === 0 ? (
+          <EmptyState message="No grades yet. Add one to get started." />
         ) : (
           <table className="w-full">
             <thead>
               <tr className="bg-[#000000]">
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
-                  Name
+                  Grade Name
                 </th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
-                  Code
+                  Grade Code
                 </th>
                 <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
-                  Min Notice Days
-                </th>
-
-                <th className="table-th font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
-                  Max Leaves Limit
+                  Level
                 </th>
                 <th className="table-th text-right font-semibold text-[rgb(173,173,173)] whitespace-nowrap">
                   Actions
@@ -287,44 +259,42 @@ const LeaveTypes = () => {
               </tr>
             </thead>
             <tbody>
-              {leaveTypes.map((lt) => (
+              {grades.map((g) => (
                 <tr
-                  key={lt.id}
+                  key={g.id}
                   className="table-row-hover last:[&>td]:border-0"
                 >
                   <td className="table-td">
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <Tag size={13} className="text-accent" />
+                      <BarChart2 size={13} className="text-accent" />
                       <span className="font-medium text-slate-200 text-[13.5px]">
-                        {lt.name}
+                        {g.grade_name}
                       </span>
                     </div>
                   </td>
                   <td className="table-td whitespace-nowrap">
                     <span className="font-mono text-xs text-slate-400 bg-surface/70 px-2 py-0.5 rounded border border-border">
-                      {lt.code}
+                      {g.grade_code}
                     </span>
                   </td>
-                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
-                    {lt.min_notice_days} days
-                  </td>
-
-                  <td className="table-td text-slate-400 text-[12.5px] whitespace-nowrap">
-                    {lt.max_allowed_leaves}
+                  <td className="table-td whitespace-nowrap">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">
+                      Level {g.level}
+                    </span>
                   </td>
                   <td className="table-td">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         className="btn-ghost hover:!bg-accent/10 hover:!text-accent hover:!border-accent/30"
                         title="Edit"
-                        onClick={() => handleEdit(lt)}
+                        onClick={() => handleEdit(g)}
                       >
                         <Pencil size={13} />
                       </button>
                       <button
                         className="btn-ghost hover:!bg-danger/10 hover:!text-danger hover:!border-danger/30"
                         title="Delete"
-                        onClick={() => handleDelete(lt.id)}
+                        onClick={() => handleDelete(g.id, g.grade_name)}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -336,8 +306,15 @@ const LeaveTypes = () => {
           </table>
         )}
       </TableWrapper>
+
+      <ConfirmModal
+        target={deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        entityLabel="Grade"
+      />
     </div>
   );
 };
 
-export default LeaveTypes;
+export default Grades;

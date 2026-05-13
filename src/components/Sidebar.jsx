@@ -17,6 +17,9 @@ import {
   Clock,
   CalendarDays,
   TableProperties,
+  Briefcase,
+  BarChart2,
+  UserCheck,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -30,6 +33,9 @@ const NAV_GROUPS = [
       { to: "/employees", label: "Employees", icon: Users },
       { to: "/add-employee", label: "Add Employees", icon: UserPlus },
       { to: "/departments", label: "Departments", icon: Building2 },
+      { to: "/designations", label: "Employee Designations", icon: Briefcase },
+      { to: "/grades", label: "Employee Grades", icon: BarChart2 },
+      { to: "/employment-types", label: "Employee Status", icon: UserCheck },
     ],
   },
   {

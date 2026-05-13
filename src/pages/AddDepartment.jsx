@@ -211,7 +211,7 @@ const AddDepartment = () => {
               </button>
               <button
                 type="button"
-                className="btn-outline"
+                className="flex-1 btn-outline flex justify-center items-center"
                 onClick={() => navigate("/departments")}
               >
                 Cancel

@@ -16,6 +16,7 @@ import { API_BASE_URL, getAuthHeaders } from "../api/config";
 import { useApp } from "../layouts/DashboardLayout";
 import { TableWrapper, EmptyState } from "../components/Table";
 import Avatar from "../components/Avatar";
+import ConfirmModal from "../components/ConfirmModal";
 
 // ─── Status Badge ────────────────────────────────────────────────────────────
 const StatusBadge = ({ status, onStatusChange, isLeadApproval, request, leaveBalances }) => {
@@ -305,6 +306,7 @@ const LeaveRequests = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [modalRequest, setModalRequest] = useState(null);
   const [leaveBalances, setLeaveBalances] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     fetchLeaveRequests();
@@ -381,14 +383,32 @@ const LeaveRequests = () => {
   const groupedRows = Object.values(groupedByEmployee);
   // ─────────────────────────────────────────────────────────────────────────
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this leave request?")) return;
+  const handleDelete = (id, name) => {
+    setDeleteTarget({ id, name: name || `Request #${id}` });
+  };
+
+  const confirmDelete = async () => {
+    const { id, isBulk } = deleteTarget;
+    setDeleteTarget(null);
     try {
-      await axios.delete(`${API_BASE_URL}/hr/leave/requests/${id}`, {
-        headers: getAuthHeaders(),
-      });
-      setRequests((prev) => prev.filter((r) => r.id !== id));
-      showToast("Leave request deleted successfully");
+      if (isBulk) {
+        await Promise.all(
+          selectedRows.map((rid) =>
+            axios.delete(`${API_BASE_URL}/hr/leave/requests/${rid}`, {
+              headers: getAuthHeaders(),
+            }),
+          ),
+        );
+        setRequests((prev) => prev.filter((r) => !selectedRows.includes(r.id)));
+        setSelectedRows([]);
+        showToast("Selected requests deleted successfully");
+      } else {
+        await axios.delete(`${API_BASE_URL}/hr/leave/requests/${id}`, {
+          headers: getAuthHeaders(),
+        });
+        setRequests((prev) => prev.filter((r) => r.id !== id));
+        showToast("Leave request deleted successfully");
+      }
     } catch {
       showToast("Failed to delete leave request");
     }
@@ -505,12 +525,11 @@ const LeaveRequests = () => {
             <button
               className="btn-ghost hover:!bg-danger/10 hover:!text-danger"
               onClick={() => {
-                if (
-                  confirm(`Delete ${selectedRows.length} selected requests?`)
-                ) {
-                  selectedRows.forEach((id) => handleDelete(id));
-                  setSelectedRows([]);
-                }
+                setDeleteTarget({
+                  id: null,
+                  name: `${selectedRows.length} selected requests`,
+                  isBulk: true,
+                });
               }}
             >
               <Trash2 size={14} />
@@ -738,7 +757,7 @@ const LeaveRequests = () => {
                         <button
                           className="btn-ghost hover:!bg-danger/10 hover:!text-danger hover:!border-danger/30"
                           title="Delete"
-                          onClick={() => handleDelete(req.id)}
+                          onClick={() => handleDelete(req.id, req.Employee?.full_name)}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -751,6 +770,13 @@ const LeaveRequests = () => {
           </table>
         )}
       </TableWrapper>
+
+      <ConfirmModal
+        target={deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        entityLabel="Leave Request"
+      />
     </div>
   );
 };
