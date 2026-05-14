@@ -5,6 +5,7 @@ import axios from "axios";
 import { API_BASE_URL, getAuthHeaders } from "../api/config";
 import { useApp } from "../layouts/DashboardLayout";
 import { TableWrapper, EmptyState } from "../components/Table";
+import ConfirmModal from "../components/ConfirmModal";
 
 const Departments = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const Departments = () => {
   const [departments, setDepartments] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     fetchDepartments();
@@ -36,8 +38,13 @@ const Departments = () => {
     d.department_name?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleDelete = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to delete ${name}?`)) return;
+  const handleDelete = (id, name) => {
+    setDeleteTarget({ id, name });
+  };
+
+  const confirmDelete = async () => {
+    const { id, name } = deleteTarget;
+    setDeleteTarget(null);
     try {
       await axios.delete(`${API_BASE_URL}/departments/${id}`, {
         headers: getAuthHeaders(),
@@ -45,8 +52,7 @@ const Departments = () => {
       setDepartments((prev) => prev.filter((d) => d.id !== id));
       showToast(`${name} has been removed.`);
     } catch (error) {
-      const msg =
-        error.response?.data?.message || "Failed to delete department";
+      const msg = error.response?.data?.message || "Failed to delete department";
       showToast(msg);
     }
   };
@@ -153,6 +159,13 @@ const Departments = () => {
           </table>
         )}
       </TableWrapper>
+
+      <ConfirmModal
+        target={deleteTarget}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+        entityLabel="Department"
+      />
     </div>
   );
 };

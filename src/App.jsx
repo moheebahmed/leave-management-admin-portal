@@ -21,6 +21,9 @@ import Payroll from "./pages/Payroll";
 import PayrollSettings from "./pages/PayrollSettings";
 import Shifts from "./pages/Shifts";
 import Holidays from "./pages/Holidays";
+import Designations from "./pages/Designations";
+import Grades from "./pages/Grades";
+import EmploymentTypes from "./pages/EmploymentTypes";
 // import Roster from './pages/Roster'
 
 const App = () => {
@@ -78,6 +81,9 @@ const App = () => {
         <Route path="attendance-register" element={<AttendanceRegister />} />
         <Route path="shifts" element={<Shifts />} />
         <Route path="holidays" element={<Holidays />} />
+        <Route path="designations" element={<Designations />} />
+        <Route path="grades" element={<Grades />} />
+        <Route path="employment-types" element={<EmploymentTypes />} />
         {/* <Route path="roster" element={<Roster />} /> */}
         <Route path="payroll" element={<Payroll />} />
         <Route path="payroll-settings" element={<PayrollSettings />} />

@@ -17,6 +17,7 @@ const AddLeaveBalance = () => {
   const [leaveForm, setLeaveForm] = useState({});
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [enforceTrue, setEnforceTrue] = useState(false);
 
   useEffect(() => {
     axios
@@ -68,17 +69,19 @@ const AddLeaveBalance = () => {
                 prefilled[b.leave_type_id] = b.total_allowed;
               });
               setLeaveForm(prefilled);
+              // Set enforceTrue based on first balance's enforce_balance value
+              if (balances.length > 0 && balances[0].enforce_balance) {
+                setEnforceTrue(true);
+              }
             })
-            .catch(() => {});
+            .catch(() => { });
         } else {
-          // ✅ FIX: Employee select hone tak kuch auto-select nahi
           setLeaveForm({});
         }
       })
       .catch(() => showToast("Failed to fetch leave types"));
   }, []);
 
-  // ✅ FIX: Employee select hone par leaves auto-select, clear hone par reset
   const handleEmployeeChange = (empId) => {
     setSelectedEmp(empId);
     if (empId) {
@@ -143,6 +146,7 @@ const AddLeaveBalance = () => {
         ([leave_type_id, total_allowed]) => ({
           leave_type_id: Number(leave_type_id),
           total_allowed: Number(total_allowed),
+          enforce_balance: enforceTrue ? 1 : 0,
         }),
       );
 
@@ -216,7 +220,6 @@ const AddLeaveBalance = () => {
               <select
                 className={`form-input-base cursor-pointer ${errors.emp ? "!border-danger" : ""} ${isEdit ? "opacity-60 cursor-not-allowed" : ""}`}
                 value={selectedEmp}
-                // ✅ FIX: handleEmployeeChange call ho raha hai ab
                 onChange={(e) =>
                   !isEdit && handleEmployeeChange(e.target.value)
                 }
@@ -259,10 +262,9 @@ const AddLeaveBalance = () => {
                     <div key={lt.id}>
                       <div
                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer
-                          ${
-                            isChecked
-                              ? "border-accent/40 bg-accent/5"
-                              : "border-border bg-surface/40 hover:border-slate-600"
+                          ${isChecked
+                            ? "border-accent/40 bg-accent/5"
+                            : "border-border bg-surface/40 hover:border-slate-600"
                           }`}
                         onClick={() => toggleLeave(lt.id)}
                       >
@@ -324,11 +326,10 @@ const AddLeaveBalance = () => {
                                   setDays(lt.id, val);
                                 }
                               }}
-                              className={`w-20 text-xs text-center form-input-base py-1 ${
-                                isExceeded
+                              className={`w-20 text-xs text-center form-input-base py-1 ${isExceeded
                                   ? "!border-danger focus:!ring-danger/10"
                                   : ""
-                              }`}
+                                }`}
                             />
                             {isExceeded && (
                               <span className="text-xs text-danger font-medium">
@@ -354,6 +355,31 @@ const AddLeaveBalance = () => {
               </p>
             </div>
 
+            {/* Enforce True Toggle */}
+            <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-surface/40">
+              <div>
+                <p className="text-sm text-slate-300 font-medium">Enforce Balance</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Override existing balance and force-set the new values.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEnforceTrue((prev) => !prev)}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+                  enforceTrue ? "bg-accent" : "bg-slate-600"
+                }`}
+                role="switch"
+                aria-checked={enforceTrue}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform duration-200 ${
+                    enforceTrue ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
             {/* Buttons */}
             <div className="flex gap-3 pt-2">
               <button type="submit" className="btn-primary" disabled={loading}>
@@ -366,7 +392,7 @@ const AddLeaveBalance = () => {
               </button>
               <button
                 type="button"
-                className="btn-outline"
+                className=" btn-outline"
                 onClick={() => navigate("/leave-balance")}
               >
                 Cancel

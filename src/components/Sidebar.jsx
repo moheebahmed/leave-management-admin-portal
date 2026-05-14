@@ -17,6 +17,9 @@ import {
   Clock,
   CalendarDays,
   TableProperties,
+  Briefcase,
+  BarChart2,
+  UserCheck,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -30,6 +33,9 @@ const NAV_GROUPS = [
       { to: "/employees", label: "Employees", icon: Users },
       { to: "/add-employee", label: "Add Employees", icon: UserPlus },
       { to: "/departments", label: "Departments", icon: Building2 },
+      { to: "/designations", label: "Employee Designations", icon: Briefcase },
+      { to: "/grades", label: "Employee Grades", icon: BarChart2 },
+      { to: "/employment-types", label: "Employee Status", icon: UserCheck },
     ],
   },
   {
@@ -44,20 +50,20 @@ const NAV_GROUPS = [
   {
     label: "Attendance",
     items: [
-      { to: '/attendance-upload', label: 'Upload Attendance', icon: Upload },
-      { to: '/attendance-records', label: 'Attendance Records', icon: CalendarCheck },
-      { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
+      // { to: '/attendance-upload', label: 'Upload Attendance', icon: Upload },
+      // { to: '/attendance-records', label: 'Attendance Records', icon: CalendarCheck },
+      // { to: '/attendance-register', label: 'Attendance Register', icon: TableProperties },
       { to: "/shifts", label: "Shifts", icon: Clock },
       { to: "/holidays", label: "Holidays", icon: CalendarDays },
     ],
   },
-  {
-  label: 'Payroll',
-  items: [
-  { to: '/payroll', label: 'Payroll', icon: Banknote },
-  { to: '/payroll-settings', label: 'Payroll Settings', icon: Settings },
-  ],
-  },
+  // {
+  // label: 'Payroll',
+  // items: [
+  // { to: '/payroll', label: 'Payroll', icon: Banknote },
+  // { to: '/payroll-settings', label: 'Payroll Settings', icon: Settings },
+  // ],
+  // },
   {
     label: "General",
     items: [{ to: "/notifications", label: "Notifications", icon: Bell }],
@@ -96,7 +102,7 @@ const Sidebar = ({ collapsed, onClose }) => {
             className={`transition-opacity duration-200 ${collapsed ? "opacity-0 pointer-events-none w-0" : "opacity-100"}`}
           >
             <div className="font-syne font-bold text-sm text-slate-100 whitespace-nowrap leading-tight">
-              LeaveOS
+              RecallHRM
             </div>
             <div className="text-[9px] font-semibold uppercase tracking-widest text-slate-500">
               HR Suite
